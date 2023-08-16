@@ -6,21 +6,27 @@
 //
 
 import Foundation
+import UIKit
 import X509
 
 public class CertificateParser: NSObject, URLSessionDelegate {
     var certificatesInfo: [CertificateInfo] = []
-    var vc: ViewController!
+    public var navigationController: UINavigationController!
     
     // Парсим сертификат по ссылке из интернета
-    func parseCertificateFromURL(url: URL) {
+    public func parseCertificateFromURL(url: URL) {
+        guard let formattedUrl = URL(string: formatURL(url.absoluteString)) else {
+            print("Error")
+            return
+        }
         let session = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
-        let task = session.dataTask(with: url)
+        let task = session.dataTask(with: formattedUrl)
+
         task.resume() //Запускаем сессию
     }
     
     // Парсим сертификат из файла
-    func parseCertificateFromFile(url: URL) {
+    public func parseCertificateFromFile(url: URL) {
         do {
             certificatesInfo.removeAll()
             
@@ -35,21 +41,21 @@ public class CertificateParser: NSObject, URLSessionDelegate {
             
             if let certificateInfo = parseCertificateInfo(pem: pemCode) {
                 certificatesInfo.append(certificateInfo)
-                vc.updateCertificatesInfo(certificates: certificatesInfo) //Обновляем массив с данными
-                vc.showCertificates()
+                showCertificates()
             }
         } catch {
+            showErrorAlert()
             print("Error loading certificate from file: \(error)")
         }
     }
-
-    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+    
+    public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         certificatesInfo.removeAll()
         
         if let serverTrust = challenge.protectionSpace.serverTrust { // serverTrust - содержит информацию о сертификате и цепочке доверия.
             let certCount = SecTrustGetCertificateCount(serverTrust)
-                for i in 0 ..< certCount { // Достаем цепочку сертификатов, от root до самого сайта
-                    if let certificate = SecTrustGetCertificateAtIndex(serverTrust, i) {
+            for i in 0 ..< certCount { // Достаем цепочку сертификатов, от root до самого сайта
+                if let certificate = SecTrustGetCertificateAtIndex(serverTrust, i) {
                     let data = SecCertificateCopyData(certificate) as Data
                     let pemCode = convertToPEM(data: data)
                     
@@ -61,10 +67,9 @@ public class CertificateParser: NSObject, URLSessionDelegate {
         }
         completionHandler(.performDefaultHandling, nil) // Завершение сессии
         
-        vc.updateCertificatesInfo(certificates: certificatesInfo) // Обновляем массив с данными
-        vc.showCertificates()
+        showCertificates()
     }
-
+    
     func convertToPEM(data: Data) -> String {
         let base64Encoded = data.base64EncodedString(options: []) // Преобразовываем строку в base64
         var pemString = "-----BEGIN CERTIFICATE-----\n"
@@ -85,7 +90,7 @@ public class CertificateParser: NSObject, URLSessionDelegate {
             print("Error!")
             return nil
         }
-
+        
         let keyUsage: ExtendedKeyUsage? = try? certificate.extensions.extendedKeyUsage
         let subjectKeyId: SubjectKeyIdentifier? = try? certificate.extensions.subjectKeyIdentifier
         let authorityKeyId: AuthorityKeyIdentifier? = try? certificate.extensions.authorityKeyIdentifier
@@ -120,21 +125,54 @@ public class CertificateParser: NSObject, URLSessionDelegate {
         
         return info
     }
-}
-
-// Парсим subject и issuer чтобы по человечески присвоить их переменным
-func parseSubject(subject: String) -> [String: String] {
-    var parsedInfo: [String: String] = [:]
     
-    let components = subject.split(separator: ",")
-    for component in components {
-        let keyValue = component.split(separator: "=", maxSplits: 1)
-        if keyValue.count == 2 {
-            let key = keyValue[0].trimmingCharacters(in: .whitespaces)
-            let value = keyValue[1].trimmingCharacters(in: .whitespaces)
-            parsedInfo[key] = value
+    // Парсим subject и issuer чтобы по человечески присвоить их переменным
+    func parseSubject(subject: String) -> [String: String] {
+        var parsedInfo: [String: String] = [:]
+        
+        let components = subject.split(separator: ",")
+        for component in components {
+            let keyValue = component.split(separator: "=", maxSplits: 1)
+            if keyValue.count == 2 {
+                let key = keyValue[0].trimmingCharacters(in: .whitespaces)
+                let value = keyValue[1].trimmingCharacters(in: .whitespaces)
+                parsedInfo[key] = value
+            }
+        }
+        
+        return parsedInfo
+    }
+    
+    //Форматируем ссылку которую ввел пользователь, чтобы правильно обратиться к адресу
+    func formatURL(_ urlString: String) -> String {
+        // Проверяем, начинается ли URL с https://www.
+        if urlString.hasPrefix("https://www.") {
+            return urlString
+        }
+        
+        // Если URL начинается с www., добавляем https://
+        if urlString.hasPrefix("www.") {
+            return "https://" + urlString
+        }
+        
+        // Если URL не содержит www., добавляем https://www.
+        return "https://www." + urlString
+    }
+    
+    func showCertificates() {
+        DispatchQueue.main.async { // Работаем в основном потоке
+            let availableCertificatesVC = ViewAvailableCertificates()
+            availableCertificatesVC.certificates = self.certificatesInfo
+            self.navigationController.pushViewController(availableCertificatesVC, animated: true)
         }
     }
     
-    return parsedInfo
+    func showErrorAlert() {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: "Ошибка", message: "Неизвестная ошибка", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.navigationController.present(alert, animated: true, completion: nil)
+        }
+    }
+
 }

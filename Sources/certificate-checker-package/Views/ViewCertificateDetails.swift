@@ -66,10 +66,7 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        
-        cell.textLabel?.numberOfLines = 0
-        cell.textLabel?.lineBreakMode = .byWordWrapping
+        let cell = CustomCell(style: .subtitle, reuseIdentifier: "cell")
         
         guard let certificate = certificate else {
             return cell
@@ -79,73 +76,92 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
         case 0:
             switch indexPath.row {
             case 0:
-                cell.textLabel?.text = "Common Name: \(checkField(certificate.subjectCN))"
+                cell.titleLabel.text = "Common Name"
+                cell.infoLabel.text = checkField(certificate.subjectCN)
             case 1:
-                cell.textLabel?.text = "Country: \(checkField(certificate.subjectC))"
+                cell.titleLabel.text = "Country"
+                cell.infoLabel.text = checkField(certificate.subjectC)
             case 2:
-                cell.textLabel?.text = "Organization: \(checkField(certificate.subjectO))"
+                cell.titleLabel.text = "Organization"
+                cell.infoLabel.text = checkField(certificate.subjectO)
             case 3:
-                cell.textLabel?.text = "State: \(checkField(certificate.subjectL))"
+                cell.titleLabel.text = "State"
+                cell.infoLabel.text = checkField(certificate.subjectL)
             case 4:
-                cell.textLabel?.text = "Organizational Unit: \(checkField(certificate.subjectOU))"
+                cell.titleLabel.text = "Organizational Unit"
+                cell.infoLabel.text = checkField(certificate.subjectOU)
             default:
                 break
             }
         case 1:
             switch indexPath.row {
             case 0:
-                cell.textLabel?.text = "Common Name: \(checkField(certificate.issuerCN))"
+                cell.titleLabel.text = "Common Name"
+                cell.infoLabel.text = checkField(certificate.issuerCN)
             case 1:
-                cell.textLabel?.text = "Country: \(checkField(certificate.issuerC))"
+                cell.titleLabel.text = "Country"
+                cell.infoLabel.text = checkField(certificate.issuerC)
             case 2:
-                cell.textLabel?.text = "Organization: \(checkField(certificate.issuerO))"
+                cell.titleLabel.text = "Organization"
+                cell.infoLabel.text = checkField(certificate.issuerO)
             case 3:
-                cell.textLabel?.text = "Organizational Unit: \(checkField(certificate.issuerOU))"
+                cell.titleLabel.text = "Organizational Unit"
+                cell.infoLabel.text = checkField(certificate.issuerOU)
             default:
                 break
             }
         case 2:
             switch indexPath.row {
             case 0:
-                cell.textLabel?.text = "Validity Before: \(certificate.validityBefore)"
+                cell.titleLabel.text = "Validity Before"
+                cell.infoLabel.text = "\(certificate.validityBefore)"
             case 1:
-                cell.textLabel?.text = "Validity After: \(certificate.validityAfter)"
+                cell.titleLabel.text = "Validity After"
+                cell.infoLabel.text = "\(certificate.validityAfter)"
             default:
                 break
             }
         case 3:
             switch indexPath.row {
             case 0:
-                cell.textLabel?.text = "Key Usage: \(checkField(certificate.keyUsage?.description))"
+                cell.titleLabel.text = "Key Usage"
+                cell.infoLabel.text = checkField(certificate.keyUsage?.description)
             default:
                 break
             }
         case 4:
             switch indexPath.row {
             case 0:
-                cell.textLabel?.text = "Signature Algorithm: \(checkField(certificate.signatureAlgorithm.description))"
+                cell.titleLabel.text = "Signature Algorithm"
+                cell.infoLabel.text = checkField(certificate.signatureAlgorithm.description)
             case 1:
-                cell.textLabel?.text = "Signature: \(checkField(certificate.signature.description))"
+                cell.titleLabel.text = "Signature"
+                cell.infoLabel.text = checkField(certificate.signature.description)
             default:
                 break
             }
         case 5:
             switch indexPath.row {
             case 0:
-                cell.textLabel?.text = "Subject keyID: \(checkField(certificate.subjectKeyId?.description))"
+                cell.titleLabel.text = "Subject keyID"
+                cell.infoLabel.text = checkField(certificate.subjectKeyId?.description)
             case 1:
-                cell.textLabel?.text = "Authority: \(checkField(certificate.authorityKeyId?.description))"
+                cell.titleLabel.text = "Authority"
+                cell.infoLabel.text = checkField(certificate.authorityKeyId?.description)
             default:
                 break
             }
         case 6:
             switch indexPath.row {
             case 0:
-                cell.textLabel?.text = "Serial Number: \(checkField(certificate.serialNumber.description))"
+                cell.titleLabel.text = "Serial Number"
+                cell.infoLabel.text = checkField(certificate.serialNumber.description)
             case 1:
-                cell.textLabel?.text = "Certificate Authority: \(checkField(certificate.certificateAuthority?.description))"
+                cell.titleLabel.text = "Certificate Authority"
+                cell.infoLabel.text = checkField(certificate.certificateAuthority?.description)
             case 2:
-                cell.textLabel?.text = "Version: \(checkField(certificate.version.description))"
+                cell.titleLabel.text = "Version"
+                cell.infoLabel.text = checkField(certificate.version.description)
             default:
                 break
             }
@@ -172,7 +188,7 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
         tableView = UITableView(frame: view.bounds, style: .grouped)
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.register(CustomCell.self, forCellReuseIdentifier: "cell")
         view.addSubview(tableView)
     }
 }
