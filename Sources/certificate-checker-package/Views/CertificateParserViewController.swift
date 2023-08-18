@@ -17,16 +17,7 @@ public class CertificateParserViewController: UIViewController {
     public init(url: URL) {
         super.init(nibName: nil, bundle: nil)
         
-        var formattedURL = url
-        formattedURL = URL(string: parser.formatURL(url.absoluteString))!
-        
-        if let scheme = formattedURL.scheme, ["http", "https"].contains(scheme) {
-            // Это URL-адрес в интернете
-            parser.parseCertificateFromURL(url: formattedURL)
-        } else {
-            // Это локальный файл
-            parser.parseCertificateFromFile(url: url)
-        }
+        parser.parseCertificateFromFile(url: url)
     }
     
     required init?(coder: NSCoder) {

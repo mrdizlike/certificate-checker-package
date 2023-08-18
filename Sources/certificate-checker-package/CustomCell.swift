@@ -14,6 +14,7 @@ class CustomCell: UITableViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .left
         label.font = UIFont.preferredFont(forTextStyle: .body)
+        label.textColor = .gray
         return label
     }()
     
@@ -22,7 +23,6 @@ class CustomCell: UITableViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .right
         label.font = UIFont.systemFont(ofSize: 16)
-        label.textColor = .gray
         label.numberOfLines = 0
         label.lineBreakMode = .byWordWrapping
         return label

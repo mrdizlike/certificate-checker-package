@@ -15,13 +15,8 @@ public class CertificateParser: NSObject, URLSessionDelegate {
     
     // Парсим сертификат по ссылке из интернета
     public func parseCertificateFromURL(url: URL) {
-        guard let formattedUrl = URL(string: formatURL(url.absoluteString)) else {
-            showErrorAlert()
-            print("Error")
-            return
-        }
         let session = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
-        let task = session.dataTask(with: formattedUrl)
+        let task = session.dataTask(with: url)
 
         task.resume() //Запускаем сессию
     }
@@ -46,8 +41,10 @@ public class CertificateParser: NSObject, URLSessionDelegate {
                 showCertificates()
             }
         } catch {
-            showErrorAlert()
-            print("Error loading certificate from file: \(error)")
+            //Не получается получить локальный файл, пробуем подключиться к серверу по ссылке
+            var formattedURL = URL(string: formatURL(url.absoluteString))!
+            parseCertificateFromURL(url: formattedURL)
+            print("Error loading certificate from file, trying WEB")
         }
     }
     
@@ -94,7 +91,8 @@ public class CertificateParser: NSObject, URLSessionDelegate {
             return nil
         }
         
-        let keyUsage: ExtendedKeyUsage? = try? certificate.extensions.extendedKeyUsage
+        let keyUsageBasic: KeyUsage? = try? certificate.extensions.keyUsage
+        let keyUsageExtended: ExtendedKeyUsage? = try? certificate.extensions.extendedKeyUsage
         let subjectKeyId: SubjectKeyIdentifier? = try? certificate.extensions.subjectKeyIdentifier
         let authorityKeyId: AuthorityKeyIdentifier? = try? certificate.extensions.authorityKeyIdentifier
         let certificateAuthority: AuthorityInformationAccess? = try? certificate.extensions.authorityInformationAccess
@@ -115,14 +113,17 @@ public class CertificateParser: NSObject, URLSessionDelegate {
             issuerOU: issuerInfo["OU"] ?? "",
             validityBefore: formatUTC(certificate.notValidBefore),
             validityAfter: formatUTC(certificate.notValidAfter),
-            keyUsage: keyUsage ?? nil,
-            signatureAlgorithm: certificate.signatureAlgorithm,
-            signature: certificate.signature,
-            subjectKeyId: subjectKeyId ?? nil,
-            authorityKeyId: authorityKeyId ?? nil,
-            serialNumber: certificate.serialNumber,
-            certificateAuthority: certificateAuthority ?? nil,
-            version: certificate.version
+            validFor: calculateTime(currentDate: certificate.notValidBefore, targetDate: certificate.notValidAfter),
+            willExpireIn: calculateTime(currentDate: Date(), targetDate: certificate.notValidAfter),
+            keyUsageBasic: keyUsageBasic?.description ?? "",
+            keyUsageExtended: keyUsageExtended?.description ?? "",
+            signatureAlgorithm: formatAlgorithmType(from: certificate.signature.description) ?? "",
+            signature: certificate.signatureAlgorithm.description.replacingOccurrences(of: "SignatureAlgorithm.", with: ""),
+            subjectKeyId: subjectKeyId?.description ?? "",
+            authorityKeyId: authorityKeyId?.description ?? "",
+            serialNumber: certificate.serialNumber.description,
+            certificateAuthority: certificateAuthority?.description ?? "",
+            version: certificate.version.description 
             
         )
         
@@ -172,6 +173,36 @@ public class CertificateParser: NSObject, URLSessionDelegate {
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         formatter.timeZone = TimeZone(abbreviation: "UTC")
         return formatter.string(from: date)
+    }
+    
+    func calculateTime(currentDate: Date, targetDate: Date) -> String {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day], from: currentDate, to: targetDate)
+        
+        let years = components.year ?? 0
+        let months = components.month ?? 0
+        let days = components.day ?? 0
+        
+        if years != 0 {
+            return "\(years) years \(months) months \(days) days"
+        } else if months != 0{
+            return "\(months) months \(days) days"
+        } else {
+            return "\(days)"
+        }
+    }
+    
+    func formatAlgorithmType(from string: String) -> String? {
+        //Используется алгоритм ECDSA
+        if string.hasPrefix("ecdsa") {
+            return "ECDSA"
+        }
+        
+        //Используется алгоритм RSA
+        if string.hasPrefix("rsa") {
+            return "RSA"
+        }
+        return nil
     }
     
     func showCertificates() {

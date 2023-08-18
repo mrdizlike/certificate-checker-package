@@ -23,17 +23,20 @@ struct CertificateInfo {
     //MARK: VALIDITY PERIOD
     let validityBefore: String //Дата ДО
     let validityAfter: String //Дата ПОСЛЕ
+    let validFor: String //Работает ДО
+    let willExpireIn: String //Сколько уже работает
     //MARK: KEY USAGE
-    let keyUsage: ExtendedKeyUsage? // Использование ключа
+    let keyUsageBasic: String //Обычное использование ключа
+    let keyUsageExtended: String//Расширенное использование ключа
     //MARK: PUBLIC KEY
-    let signatureAlgorithm: Certificate.SignatureAlgorithm //Алгоритм подписи
-    let signature: Certificate.Signature //Подпись сертификата
+    let signatureAlgorithm: String //Алгоритм подписи
+    let signature: String //Подпись сертификата
     //MARK: KEY IDENTIFIER
-    let subjectKeyId: SubjectKeyIdentifier? //Идентификатор ключа владельца сертификата
-    let authorityKeyId: AuthorityKeyIdentifier? //Идентификатор ключа издателя сертификата
+    let subjectKeyId: String //Идентификатор ключа владельца сертификата
+    let authorityKeyId: String //Идентификатор ключа издателя сертификата
     //MARK: METADATA
-    let serialNumber: Certificate.SerialNumber //Серийный номер сертификата
-    let certificateAuthority: AuthorityInformationAccess? //Доступ к информации издателя сертификата
-    let version: Certificate.Version //Версия сертификата
+    let serialNumber: String //Серийный номер сертификата
+    let certificateAuthority: String //Доступ к информации издателя сертификата
+    let version: String //Версия сертификата
 }
 
