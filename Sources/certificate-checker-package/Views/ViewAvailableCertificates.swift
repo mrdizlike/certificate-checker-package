@@ -45,7 +45,7 @@ class ViewAvailableCertificates: UIViewController, UITableViewDataSource, UITabl
         let detailsVC = ViewCertificateDetails()
         detailsVC.certificate = selectedCertificate
         
-        navigationController?.pushViewController(detailsVC, animated: true)
+        present(detailsVC, animated: true)
     }
     
     func setupViewController() {

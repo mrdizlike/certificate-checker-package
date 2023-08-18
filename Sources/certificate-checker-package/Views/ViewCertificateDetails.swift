@@ -10,6 +10,7 @@ import UIKit
 class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableViewDelegate {
     var tableView: UITableView!
     var certificate: CertificateInfo?
+    var sections: [Section] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -18,157 +19,24 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 7
+        return sections.count
     }
 
     //Количество строк в подзаголовках
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch section {
-        case 0:
-            return 5
-        case 1:
-            return 4
-        case 2:
-            return 2
-        case 3:
-            return 1
-        case 4:
-            return 2
-        case 5:
-            return 2
-        case 6:
-            return 3
-        default:
-            return 0
-        }
+        return sections[section].rows.filter { checkField($0.value) != "none" }.count
     }
 
     //Подзаголовки
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        switch section {
-        case 0:
-            return "SUBJECT"
-        case 1:
-            return "ISSUER"
-        case 2:
-            return "VALIDITY PERIOD"
-        case 3:
-            return "KEY USAGE"
-        case 4:
-            return "PUBLIC KEY"
-        case 5:
-            return "KEY IDENTIFIER"
-        case 6:
-            return "METADATA"
-        default:
-            return nil
-        }
+        return sections[section].title
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = CustomCell(style: .subtitle, reuseIdentifier: "cell")
-        
-        guard let certificate = certificate else {
-            return cell
-        }
-        
-        switch indexPath.section {
-        case 0:
-            switch indexPath.row {
-            case 0:
-                cell.titleLabel.text = "Common Name"
-                cell.infoLabel.text = checkField(certificate.subjectCN)
-            case 1:
-                cell.titleLabel.text = "Country"
-                cell.infoLabel.text = checkField(certificate.subjectC)
-            case 2:
-                cell.titleLabel.text = "Organization"
-                cell.infoLabel.text = checkField(certificate.subjectO)
-            case 3:
-                cell.titleLabel.text = "State"
-                cell.infoLabel.text = checkField(certificate.subjectL)
-            case 4:
-                cell.titleLabel.text = "Organizational Unit"
-                cell.infoLabel.text = checkField(certificate.subjectOU)
-            default:
-                break
-            }
-        case 1:
-            switch indexPath.row {
-            case 0:
-                cell.titleLabel.text = "Common Name"
-                cell.infoLabel.text = checkField(certificate.issuerCN)
-            case 1:
-                cell.titleLabel.text = "Country"
-                cell.infoLabel.text = checkField(certificate.issuerC)
-            case 2:
-                cell.titleLabel.text = "Organization"
-                cell.infoLabel.text = checkField(certificate.issuerO)
-            case 3:
-                cell.titleLabel.text = "Organizational Unit"
-                cell.infoLabel.text = checkField(certificate.issuerOU)
-            default:
-                break
-            }
-        case 2:
-            switch indexPath.row {
-            case 0:
-                cell.titleLabel.text = "Validity Before"
-                cell.infoLabel.text = "\(certificate.validityBefore)"
-            case 1:
-                cell.titleLabel.text = "Validity After"
-                cell.infoLabel.text = "\(certificate.validityAfter)"
-            default:
-                break
-            }
-        case 3:
-            switch indexPath.row {
-            case 0:
-                cell.titleLabel.text = "Key Usage"
-                cell.infoLabel.text = checkField(certificate.keyUsage?.description)
-            default:
-                break
-            }
-        case 4:
-            switch indexPath.row {
-            case 0:
-                cell.titleLabel.text = "Signature Algorithm"
-                cell.infoLabel.text = checkField(certificate.signatureAlgorithm.description)
-            case 1:
-                cell.titleLabel.text = "Signature"
-                cell.infoLabel.text = checkField(certificate.signature.description)
-            default:
-                break
-            }
-        case 5:
-            switch indexPath.row {
-            case 0:
-                cell.titleLabel.text = "Subject keyID"
-                cell.infoLabel.text = checkField(certificate.subjectKeyId?.description)
-            case 1:
-                cell.titleLabel.text = "Authority"
-                cell.infoLabel.text = checkField(certificate.authorityKeyId?.description)
-            default:
-                break
-            }
-        case 6:
-            switch indexPath.row {
-            case 0:
-                cell.titleLabel.text = "Serial Number"
-                cell.infoLabel.text = checkField(certificate.serialNumber.description)
-            case 1:
-                cell.titleLabel.text = "Certificate Authority"
-                cell.infoLabel.text = checkField(certificate.certificateAuthority?.description)
-            case 2:
-                cell.titleLabel.text = "Version"
-                cell.infoLabel.text = checkField(certificate.version.description)
-            default:
-                break
-            }
-        default:
-            break
-        }
-        
+        let row = sections[indexPath.section].rows[indexPath.row]
+        cell.titleLabel.text = row.title
+        cell.infoLabel.text = checkField(row.value)
         return cell
     }
 
@@ -184,6 +52,41 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
     
     func setupViewController() {
         title = certificate?.subjectCN
+        sections = [
+                Section(title: "SUBJECT", rows: [
+                    Row(title: "Common Name", value: certificate?.subjectCN),
+                    Row(title: "Country", value: certificate?.subjectC),
+                    Row(title: "Organization", value: certificate?.subjectO),
+                    Row(title: "State", value: certificate?.subjectL),
+                    Row(title: "Organizational Unit", value: certificate?.subjectOU)
+                ]),
+                Section(title: "ISSUER", rows: [
+                    Row(title: "Common Name", value: certificate?.issuerCN),
+                    Row(title: "Country", value: certificate?.issuerC),
+                    Row(title: "Organization", value: certificate?.issuerO),
+                    Row(title: "Organizational Unit", value: certificate?.issuerOU)
+                ]),
+                Section(title: "VALIDITY PERIOD", rows: [
+                    Row(title: "Validity Before", value: "\(certificate!.validityBefore)"),
+                    Row(title: "Validity After", value: "\(certificate!.validityAfter)")
+                ]),
+                Section(title: "KEY USAGE", rows: [
+                    Row(title: "Key Usage", value: certificate?.keyUsage?.description)
+                ]),
+                Section(title: "PUBLIC KEY", rows: [
+                    Row(title: "Signature Algorithm", value: certificate?.signatureAlgorithm.description),
+                    Row(title: "Signature", value: certificate?.signature.description)
+                ]),
+                Section(title: "KEY IDENTIFIER", rows: [
+                    Row(title: "Subject keyID", value: certificate?.subjectKeyId?.description),
+                    Row(title: "Authority", value: certificate?.authorityKeyId?.description)
+                ]),
+                Section(title: "METADATA", rows: [
+                    Row(title: "Serial Number", value: certificate?.serialNumber.description),
+                    Row(title: "Certificate Authority", value: certificate?.certificateAuthority?.description),
+                    Row(title: "Version", value: certificate?.version.description)
+                ])
+            ]
         
         tableView = UITableView(frame: view.bounds, style: .grouped)
         tableView.delegate = self

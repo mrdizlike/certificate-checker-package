@@ -11,11 +11,12 @@ import X509
 
 public class CertificateParser: NSObject, URLSessionDelegate {
     var certificatesInfo: [CertificateInfo] = []
-    public var navigationController: UINavigationController!
+    public var viewController: UIViewController!
     
     // Парсим сертификат по ссылке из интернета
     public func parseCertificateFromURL(url: URL) {
         guard let formattedUrl = URL(string: formatURL(url.absoluteString)) else {
+            showErrorAlert()
             print("Error")
             return
         }
@@ -33,6 +34,7 @@ public class CertificateParser: NSObject, URLSessionDelegate {
             let data = try Data(contentsOf: url)
             // Создаем SecCertificate из данных
             guard let certificate = SecCertificateCreateWithData(nil, data as CFData) else {
+                showErrorAlert()
                 print("Error creating certificate from data")
                 return
             }
@@ -87,6 +89,7 @@ public class CertificateParser: NSObject, URLSessionDelegate {
     
     func parseCertificateInfo(pem: String) -> CertificateInfo? {
         guard let certificate = try? Certificate(pemEncoded: pem) else {
+            showErrorAlert()
             print("Error!")
             return nil
         }
@@ -110,8 +113,8 @@ public class CertificateParser: NSObject, URLSessionDelegate {
             issuerC: issuerInfo["C"] ?? "",
             issuerO: issuerInfo["O"] ?? "",
             issuerOU: issuerInfo["OU"] ?? "",
-            validityBefore: certificate.notValidBefore,
-            validityAfter: certificate.notValidAfter,
+            validityBefore: formatUTC(certificate.notValidBefore),
+            validityAfter: formatUTC(certificate.notValidAfter),
             keyUsage: keyUsage ?? nil,
             signatureAlgorithm: certificate.signatureAlgorithm,
             signature: certificate.signature,
@@ -156,14 +159,26 @@ public class CertificateParser: NSObject, URLSessionDelegate {
         }
         
         // Если URL не содержит www., добавляем https://www.
-        return "https://www." + urlString
+        if !urlString.contains("www.") && !urlString.contains("http://") && !urlString.contains("https://") {
+            return "https://www." + urlString
+        }
+        
+        // В противном случае возвращаем исходный URL
+        return urlString
+    }
+    
+    func formatUTC(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        formatter.timeZone = TimeZone(abbreviation: "UTC")
+        return formatter.string(from: date)
     }
     
     func showCertificates() {
         DispatchQueue.main.async { // Работаем в основном потоке
             let availableCertificatesVC = ViewAvailableCertificates()
             availableCertificatesVC.certificates = self.certificatesInfo
-            self.navigationController.pushViewController(availableCertificatesVC, animated: true)
+            self.viewController.present(availableCertificatesVC, animated: true)
         }
     }
     
@@ -171,7 +186,7 @@ public class CertificateParser: NSObject, URLSessionDelegate {
         DispatchQueue.main.async {
             let alert = UIAlertController(title: "Ошибка", message: "Неизвестная ошибка", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-            self.navigationController.present(alert, animated: true, completion: nil)
+            self.viewController.present(alert, animated: true, completion: nil)
         }
     }
 

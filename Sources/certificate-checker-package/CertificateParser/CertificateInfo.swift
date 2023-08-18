@@ -21,8 +21,8 @@ struct CertificateInfo {
     let issuerO: String //Организация издателя
     let issuerOU: String //Организационный союз
     //MARK: VALIDITY PERIOD
-    let validityBefore: Date //Дата ДО
-    let validityAfter: Date //Дата ПОСЛЕ
+    let validityBefore: String //Дата ДО
+    let validityAfter: String //Дата ПОСЛЕ
     //MARK: KEY USAGE
     let keyUsage: ExtendedKeyUsage? // Использование ключа
     //MARK: PUBLIC KEY

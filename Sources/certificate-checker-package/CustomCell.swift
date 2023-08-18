@@ -13,7 +13,7 @@ class CustomCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .left
-        label.font = UIFont.systemFont(ofSize: 20)
+        label.font = UIFont.preferredFont(forTextStyle: .body)
         return label
     }()
     
@@ -43,7 +43,7 @@ class CustomCell: UITableViewCell {
             titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5),
             
             infoLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
-            infoLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -5)
+            infoLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 0)
         ])
         
         // Constraints для side-by-side расположения
@@ -55,7 +55,6 @@ class CustomCell: UITableViewCell {
         
         // Constraints для stacked расположения
         stackedConstraints = [
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
             titleLabel.bottomAnchor.constraint(equalTo: infoLabel.topAnchor, constant: -5),
             infoLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15)
         ]
@@ -77,4 +76,14 @@ class CustomCell: UITableViewCell {
             NSLayoutConstraint.activate(sideBySideConstraints)
         }
     }
+}
+
+struct Row {
+    let title: String
+    let value: String?
+}
+
+struct Section {
+    let title: String
+    let rows: [Row]
 }
