@@ -36,7 +36,7 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
         let cell = CustomCell(style: .subtitle, reuseIdentifier: "cell")
         let row = sections[indexPath.section].rows[indexPath.row]
         cell.titleLabel.text = row.title
-        cell.infoLabel.text = checkField(row.value)
+        cell.infoLabelSetup(withText: checkField(row.value))
         return cell
     }
 

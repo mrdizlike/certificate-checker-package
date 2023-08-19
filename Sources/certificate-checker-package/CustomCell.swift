@@ -33,6 +33,7 @@ class CustomCell: UITableViewCell {
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        contentView.heightAnchor.constraint(greaterThanOrEqualToConstant: 52).isActive = true
         
         contentView.addSubview(titleLabel)
         contentView.addSubview(infoLabel)
@@ -55,8 +56,10 @@ class CustomCell: UITableViewCell {
         
         // Constraints для stacked расположения
         stackedConstraints = [
-            titleLabel.bottomAnchor.constraint(equalTo: infoLabel.topAnchor, constant: -5),
-            infoLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15)
+            infoLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
+            infoLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 5),
+            infoLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
+            infoLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -5)
         ]
     }
     
@@ -64,8 +67,8 @@ class CustomCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
+    func infoLabelSetup(withText text: String) {
+        infoLabel.text = text
         
         if let text = infoLabel.text, text.count > 25 {
             NSLayoutConstraint.deactivate(sideBySideConstraints)
@@ -75,6 +78,8 @@ class CustomCell: UITableViewCell {
             NSLayoutConstraint.deactivate(stackedConstraints)
             NSLayoutConstraint.activate(sideBySideConstraints)
         }
+        
+        layoutIfNeeded()
     }
 }
 
