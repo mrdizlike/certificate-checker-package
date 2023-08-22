@@ -9,22 +9,34 @@ import Foundation
 import UIKit
 import X509
 
-public class CertificateParser: NSObject, URLSessionDelegate {
+class CertificateParser: NSObject, URLSessionDelegate {
     var certificatesInfo: [CertificateInfo] = []
-    public var viewController: UIViewController!
+    var viewController: CertificateParserViewController!
     
     // Парсим сертификат по ссылке из интернета
-    public func parseCertificateFromURL(url: URL) {
+    func parseCertificateFromURL(url: URL) {
         let session = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
-        let task = session.dataTask(with: url)
+        let task = session.dataTask(with: url) { [weak self] (data, response, error) in
+            // Если есть ошибка, показываем alert
+            if let _ = error {
+                self?.showErrorAlert()
+            }
+            
+            // Останавливаем индикатор активности после завершения запроса
+            DispatchQueue.main.async {
+                self?.viewController.activityIndicator.stopAnimating()
+            }
+        }
+
 
         task.resume() //Запускаем сессию
     }
     
     // Парсим сертификат из файла
-    public func parseCertificateFromFile(url: URL) {
+    func parseCertificateFromFile(url: URL) {
         do {
             certificatesInfo.removeAll()
+            viewController.activityIndicator.startAnimating() // Показываем плашку загрузки
             
             let data = try Data(contentsOf: url)
             // Создаем SecCertificate из данных
@@ -38,6 +50,7 @@ public class CertificateParser: NSObject, URLSessionDelegate {
             
             if let certificateInfo = parseCertificateInfo(pem: pemCode) {
                 certificatesInfo.append(certificateInfo)
+                viewController.activityIndicator.stopAnimating() // Скрываем плашку загрузки
                 showCertificates()
             }
         } catch {
@@ -48,7 +61,7 @@ public class CertificateParser: NSObject, URLSessionDelegate {
         }
     }
     
-    public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         certificatesInfo.removeAll()
         
         if let serverTrust = challenge.protectionSpace.serverTrust { // serverTrust - содержит информацию о сертификате и цепочке доверия.
@@ -184,11 +197,11 @@ public class CertificateParser: NSObject, URLSessionDelegate {
         let days = components.day ?? 0
         
         if years != 0 {
-            return "\(years) years \(months) months \(days) days"
+            return String(format: NSLocalizedString("years_months_days", bundle: .module ,comment: ""), years, months, days)
         } else if months != 0{
-            return "\(months) months \(days) days"
+            return String(format: NSLocalizedString("months_days", bundle: .module, comment: ""), months, days)
         } else {
-            return "\(days)"
+            return String(format: NSLocalizedString("days", bundle: .module, comment: ""), days)
         }
     }
     
@@ -209,13 +222,16 @@ public class CertificateParser: NSObject, URLSessionDelegate {
         DispatchQueue.main.async { // Работаем в основном потоке
             let availableCertificatesVC = ViewAvailableCertificates()
             availableCertificatesVC.certificates = self.certificatesInfo
-            self.viewController.present(availableCertificatesVC, animated: true)
+            self.viewController.addChild(availableCertificatesVC)
+            self.viewController.view.addSubview(availableCertificatesVC.view)
+            availableCertificatesVC.didMove(toParent: self.viewController)
+            self.viewController.activityIndicator.stopAnimating() // Скрываем плашку загрузки
         }
     }
     
     func showErrorAlert() {
         DispatchQueue.main.async {
-            let alert = UIAlertController(title: "Ошибка", message: "Неизвестная ошибка", preferredStyle: .alert)
+            let alert = UIAlertController(title: NSLocalizedString("error", bundle: .module, comment: ""), message: NSLocalizedString("error_subcription", bundle: .module, comment: ""), preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
             self.viewController.present(alert, animated: true, completion: nil)
         }

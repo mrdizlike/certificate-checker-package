@@ -26,7 +26,8 @@ let package = Package(
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "certificate-checker-package",
-            dependencies: [.product(name: "X509", package: "swift-certificates")]),
+            dependencies: [.product(name: "X509", package: "swift-certificates")],
+            resources: [.process("Localization")]),
         .testTarget(
             name: "certificate-checker-packageTests",
             dependencies: ["certificate-checker-package"]),

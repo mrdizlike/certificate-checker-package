@@ -53,41 +53,41 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
     func setupViewController() {
         title = certificate?.subjectCN
         sections = [
-                Section(title: "SUBJECT", rows: [
-                    Row(title: "Common Name", value: certificate?.subjectCN),
-                    Row(title: "Country", value: certificate?.subjectC),
-                    Row(title: "Organization", value: certificate?.subjectO),
-                    Row(title: "State", value: certificate?.subjectL),
-                    Row(title: "Organizational Unit", value: certificate?.subjectOU)
+                Section(title: NSLocalizedString("subject", bundle: .module, comment: ""), rows: [
+                    Row(title: NSLocalizedString("common_name", bundle: .module, comment: ""), value: certificate?.subjectCN),
+                    Row(title: NSLocalizedString("country", bundle: .module, comment: ""), value: certificate?.subjectC),
+                    Row(title: NSLocalizedString("organization", bundle: .module, comment: ""), value: certificate?.subjectO),
+                    Row(title: NSLocalizedString("state", bundle: .module, comment: ""), value: certificate?.subjectL),
+                    Row(title: NSLocalizedString("organizational_unit", bundle: .module, comment: ""), value: certificate?.subjectOU)
                 ]),
-                Section(title: "ISSUER", rows: [
-                    Row(title: "Common Name", value: certificate?.issuerCN),
-                    Row(title: "Country", value: certificate?.issuerC),
-                    Row(title: "Organization", value: certificate?.issuerO),
-                    Row(title: "Organizational Unit", value: certificate?.issuerOU)
+                Section(title: NSLocalizedString("issuer", bundle: .module, comment: ""), rows: [
+                    Row(title: NSLocalizedString("common_name", bundle: .module, comment: ""), value: certificate?.issuerCN),
+                    Row(title: NSLocalizedString("country", bundle: .module, comment: ""), value: certificate?.issuerC),
+                    Row(title: NSLocalizedString("organization", bundle: .module, comment: ""), value: certificate?.issuerO),
+                    Row(title: NSLocalizedString("organizational_unit", bundle: .module, comment: ""), value: certificate?.issuerOU)
                 ]),
-                Section(title: "VALIDITY PERIOD", rows: [
-                    Row(title: "Validity Before", value: "\(certificate!.validityBefore)"),
-                    Row(title: "Validity After", value: "\(certificate!.validityAfter)"),
-                    Row(title: "Valid For", value: "\(certificate!.validFor)"),
-                    Row(title: "Will Expire In", value: "\(certificate!.willExpireIn)")
+                Section(title: NSLocalizedString("validity_period", bundle: .module, comment: ""), rows: [
+                    Row(title: NSLocalizedString("validity_before", bundle: .module, comment: ""), value: "\(certificate!.validityBefore)"),
+                    Row(title: NSLocalizedString("validity_after", bundle: .module, comment: ""), value: "\(certificate!.validityAfter)"),
+                    Row(title: NSLocalizedString("valid_for", bundle: .module, comment: ""), value: "\(certificate!.validFor)"),
+                    Row(title: NSLocalizedString("will_expire_in", bundle: .module, comment: ""), value: "\(certificate!.willExpireIn)")
                 ]),
-                Section(title: "KEY USAGE", rows: [
-                    Row(title: "Basic", value: certificate?.keyUsageBasic),
-                    Row(title: "Extended", value: certificate?.keyUsageExtended)
+                Section(title: NSLocalizedString("key_usage", bundle: .module, comment: ""), rows: [
+                    Row(title: NSLocalizedString("basic", bundle: .module, comment: ""), value: certificate?.keyUsageBasic),
+                    Row(title: NSLocalizedString("extended", bundle: .module, comment: ""), value: certificate?.keyUsageExtended)
                 ]),
-                Section(title: "PUBLIC KEY", rows: [
-                    Row(title: "Signature Algorithm", value: certificate?.signatureAlgorithm),
-                    Row(title: "Signature", value: certificate?.signature)
+                Section(title: NSLocalizedString("public_key", bundle: .module, comment: ""), rows: [
+                    Row(title: NSLocalizedString("signature_algorithm", bundle: .module, comment: ""), value: certificate?.signatureAlgorithm),
+                    Row(title: NSLocalizedString("signature", bundle: .module, comment: ""), value: certificate?.signature)
                 ]),
-                Section(title: "KEY IDENTIFIER", rows: [
-                    Row(title: "Subject", value: certificate?.subjectKeyId),
-                    Row(title: "Authority", value: certificate?.authorityKeyId)
+                Section(title: NSLocalizedString("key_identifier", bundle: .module, comment: ""), rows: [
+                    Row(title: NSLocalizedString("subject_key_id", bundle: .module, comment: ""), value: certificate?.subjectKeyId),
+                    Row(title: NSLocalizedString("authority_key_id", bundle: .module, comment: ""), value: certificate?.authorityKeyId)
                 ]),
-                Section(title: "METADATA", rows: [
-                    Row(title: "Serial Number", value: certificate?.serialNumber),
-                    Row(title: "Certificate Authority", value: certificate?.certificateAuthority),
-                    Row(title: "Version", value: certificate?.version)
+                Section(title: NSLocalizedString("metadata", bundle: .module, comment: ""), rows: [
+                    Row(title: NSLocalizedString("serial_number", bundle: .module, comment: ""), value: certificate?.serialNumber),
+                    Row(title: NSLocalizedString("certificate_authority", bundle: .module, comment: ""), value: certificate?.certificateAuthority),
+                    Row(title: NSLocalizedString("version", bundle: .module, comment: ""), value: certificate?.version)
                 ])
             ]
         

@@ -14,10 +14,20 @@ public class CertificateParserViewController: UIViewController {
         return $0
     }(CertificateParser())
     
+    var activityIndicator: UIActivityIndicatorView!
+    
     public init(url: URL) {
         super.init(nibName: nil, bundle: nil)
         
+        activityIndicatorInit()
         parser.parseCertificateFromFile(url: url)
+    }
+
+    func activityIndicatorInit() {
+        activityIndicator = UIActivityIndicatorView(style: .large)
+        activityIndicator.center = view.center
+        activityIndicator.hidesWhenStopped = true
+        view.addSubview(activityIndicator)
     }
     
     required init?(coder: NSCoder) {

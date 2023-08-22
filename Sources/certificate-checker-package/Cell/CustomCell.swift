@@ -22,7 +22,7 @@ class CustomCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .right
-        label.font = UIFont.systemFont(ofSize: 16)
+        label.font = UIFont.preferredFont(forTextStyle: .subheadline)
         label.numberOfLines = 0
         label.lineBreakMode = .byWordWrapping
         return label
@@ -40,26 +40,26 @@ class CustomCell: UITableViewCell {
         
         // Дефолтные constraints
         NSLayoutConstraint.activate([
-            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
-            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5),
+            titleLabel.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
+            titleLabel.topAnchor.constraint(equalTo: contentView.layoutMarginsGuide.topAnchor),
             
-            infoLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
-            infoLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 0)
+            infoLabel.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
+            infoLabel.bottomAnchor.constraint(equalTo: contentView.layoutMarginsGuide.bottomAnchor)
         ])
         
         // Constraints для side-by-side расположения
         sideBySideConstraints = [
             titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: infoLabel.leadingAnchor, constant: -10),
-            titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -5),
-            infoLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5)
+            titleLabel.bottomAnchor.constraint(equalTo: contentView.layoutMarginsGuide.bottomAnchor),
+            infoLabel.topAnchor.constraint(equalTo: contentView.layoutMarginsGuide.topAnchor)
         ]
         
         // Constraints для stacked расположения
         stackedConstraints = [
-            infoLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
+            infoLabel.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
             infoLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 5),
-            infoLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
-            infoLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -5)
+            infoLabel.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
+            infoLabel.bottomAnchor.constraint(equalTo: contentView.layoutMarginsGuide.bottomAnchor)
         ]
     }
     
@@ -81,14 +81,4 @@ class CustomCell: UITableViewCell {
         
         layoutIfNeeded()
     }
-}
-
-struct Row {
-    let title: String
-    let value: String?
-}
-
-struct Section {
-    let title: String
-    let rows: [Row]
 }
