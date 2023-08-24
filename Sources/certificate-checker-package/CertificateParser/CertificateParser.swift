@@ -55,7 +55,7 @@ class CertificateParser: NSObject, URLSessionDelegate {
             }
         } catch {
             //Не получается получить локальный файл, пробуем подключиться к серверу по ссылке
-            var formattedURL = URL(string: formatURL(url.absoluteString))!
+            let formattedURL = URL(string: formatURL(url.absoluteString))!
             parseCertificateFromURL(url: formattedURL)
             print("Error loading certificate from file, trying WEB")
         }
@@ -192,7 +192,6 @@ class CertificateParser: NSObject, URLSessionDelegate {
         let calendar = Calendar.current
         let components = calendar.dateComponents([.year, .month, .day], from: currentDate, to: targetDate)
         
-        let localizationName = viewController.localizationName
         let years = components.year ?? 0
         let months = components.month ?? 0
         let days = components.day ?? 0
@@ -237,5 +236,4 @@ class CertificateParser: NSObject, URLSessionDelegate {
             self.viewController.present(alert, animated: true, completion: nil)
         }
     }
-
 }
