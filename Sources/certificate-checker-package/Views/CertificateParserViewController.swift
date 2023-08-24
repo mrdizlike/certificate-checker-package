@@ -15,6 +15,7 @@ public class CertificateParserViewController: UIViewController {
     }(CertificateParser())
     
     var activityIndicator: UIActivityIndicatorView!
+    var localizationName = "Localizable"
     
     public init(url: URL) {
         super.init(nibName: nil, bundle: nil)

@@ -53,41 +53,41 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
     func setupViewController() {
         title = certificate?.subjectCN
         sections = [
-                Section(title: NSLocalizedString("subject", bundle: .module, comment: ""), rows: [
-                    Row(title: NSLocalizedString("common_name", bundle: .module, comment: ""), value: certificate?.subjectCN),
-                    Row(title: NSLocalizedString("country", bundle: .module, comment: ""), value: certificate?.subjectC),
-                    Row(title: NSLocalizedString("organization", bundle: .module, comment: ""), value: certificate?.subjectO),
-                    Row(title: NSLocalizedString("state", bundle: .module, comment: ""), value: certificate?.subjectL),
-                    Row(title: NSLocalizedString("organizational_unit", bundle: .module, comment: ""), value: certificate?.subjectOU)
+            Section(title: LocalizationSystem.subject, rows: [
+                Row(title: LocalizationSystem.commonName, value: certificate?.subjectCN),
+                Row(title: LocalizationSystem.country, value: certificate?.subjectC),
+                Row(title: LocalizationSystem.organization, value: certificate?.subjectO),
+                Row(title: LocalizationSystem.state, value: certificate?.subjectL),
+                Row(title: LocalizationSystem.organizationalUnit, value: certificate?.subjectOU)
                 ]),
-                Section(title: NSLocalizedString("issuer", bundle: .module, comment: ""), rows: [
-                    Row(title: NSLocalizedString("common_name", bundle: .module, comment: ""), value: certificate?.issuerCN),
-                    Row(title: NSLocalizedString("country", bundle: .module, comment: ""), value: certificate?.issuerC),
-                    Row(title: NSLocalizedString("organization", bundle: .module, comment: ""), value: certificate?.issuerO),
-                    Row(title: NSLocalizedString("organizational_unit", bundle: .module, comment: ""), value: certificate?.issuerOU)
+            Section(title: LocalizationSystem.issuer, rows: [
+                Row(title: LocalizationSystem.commonName, value: certificate?.issuerCN),
+                Row(title: LocalizationSystem.country, value: certificate?.issuerC),
+                Row(title: LocalizationSystem.organization, value: certificate?.issuerO),
+                Row(title: LocalizationSystem.organizationalUnit, value: certificate?.issuerOU)
                 ]),
-                Section(title: NSLocalizedString("validity_period", bundle: .module, comment: ""), rows: [
-                    Row(title: NSLocalizedString("validity_before", bundle: .module, comment: ""), value: "\(certificate!.validityBefore)"),
-                    Row(title: NSLocalizedString("validity_after", bundle: .module, comment: ""), value: "\(certificate!.validityAfter)"),
-                    Row(title: NSLocalizedString("valid_for", bundle: .module, comment: ""), value: "\(certificate!.validFor)"),
-                    Row(title: NSLocalizedString("will_expire_in", bundle: .module, comment: ""), value: "\(certificate!.willExpireIn)")
+            Section(title: LocalizationSystem.validityPeriod, rows: [
+                Row(title: LocalizationSystem.validityBefore, value: "\(certificate!.validityBefore)"),
+                Row(title: LocalizationSystem.validityAfter, value: "\(certificate!.validityAfter)"),
+                Row(title: LocalizationSystem.validFor, value: "\(certificate!.validFor)"),
+                Row(title: LocalizationSystem.willExpireIn, value: "\(certificate!.willExpireIn)")
                 ]),
-                Section(title: NSLocalizedString("key_usage", bundle: .module, comment: ""), rows: [
-                    Row(title: NSLocalizedString("basic", bundle: .module, comment: ""), value: certificate?.keyUsageBasic),
-                    Row(title: NSLocalizedString("extended", bundle: .module, comment: ""), value: certificate?.keyUsageExtended)
+            Section(title: LocalizationSystem.keyUsage, rows: [
+                Row(title: LocalizationSystem.basic, value: certificate?.keyUsageBasic),
+                Row(title: LocalizationSystem.extended, value: certificate?.keyUsageExtended)
                 ]),
-                Section(title: NSLocalizedString("public_key", bundle: .module, comment: ""), rows: [
-                    Row(title: NSLocalizedString("signature_algorithm", bundle: .module, comment: ""), value: certificate?.signatureAlgorithm),
-                    Row(title: NSLocalizedString("signature", bundle: .module, comment: ""), value: certificate?.signature)
+            Section(title: LocalizationSystem.publicKey, rows: [
+                Row(title: LocalizationSystem.signatureAlgorithm, value: certificate?.signatureAlgorithm),
+                Row(title: LocalizationSystem.signature, value: certificate?.signature)
                 ]),
-                Section(title: NSLocalizedString("key_identifier", bundle: .module, comment: ""), rows: [
-                    Row(title: NSLocalizedString("subject_key_id", bundle: .module, comment: ""), value: certificate?.subjectKeyId),
-                    Row(title: NSLocalizedString("authority_key_id", bundle: .module, comment: ""), value: certificate?.authorityKeyId)
+            Section(title: LocalizationSystem.keyIdentifier, rows: [
+                Row(title: LocalizationSystem.subjectKeyId, value: certificate?.subjectKeyId),
+                Row(title: LocalizationSystem.authorityKeyId, value: certificate?.authorityKeyId)
                 ]),
-                Section(title: NSLocalizedString("metadata", bundle: .module, comment: ""), rows: [
-                    Row(title: NSLocalizedString("serial_number", bundle: .module, comment: ""), value: certificate?.serialNumber),
-                    Row(title: NSLocalizedString("certificate_authority", bundle: .module, comment: ""), value: certificate?.certificateAuthority),
-                    Row(title: NSLocalizedString("version", bundle: .module, comment: ""), value: certificate?.version)
+            Section(title: LocalizationSystem.metadata, rows: [
+                Row(title: LocalizationSystem.serialNumber, value: certificate?.serialNumber),
+                Row(title: LocalizationSystem.certificateAuthority, value: certificate?.certificateAuthority),
+                Row(title: LocalizationSystem.version, value: certificate?.version)
                 ])
             ]
         

@@ -192,16 +192,17 @@ class CertificateParser: NSObject, URLSessionDelegate {
         let calendar = Calendar.current
         let components = calendar.dateComponents([.year, .month, .day], from: currentDate, to: targetDate)
         
+        let localizationName = viewController.localizationName
         let years = components.year ?? 0
         let months = components.month ?? 0
         let days = components.day ?? 0
         
         if years != 0 {
-            return String(format: NSLocalizedString("years_months_days", bundle: .module ,comment: ""), years, months, days)
+            return String(format: LocalizationSystem.daysMonthsYearsCount, years, months, days)
         } else if months != 0{
-            return String(format: NSLocalizedString("months_days", bundle: .module, comment: ""), months, days)
+            return String(format: LocalizationSystem.daysMonthsCount, months, days)
         } else {
-            return String(format: NSLocalizedString("days", bundle: .module, comment: ""), days)
+            return String(format: LocalizationSystem.daysCount, days)
         }
     }
     
@@ -231,8 +232,8 @@ class CertificateParser: NSObject, URLSessionDelegate {
     
     func showErrorAlert() {
         DispatchQueue.main.async {
-            let alert = UIAlertController(title: NSLocalizedString("error", bundle: .module, comment: ""), message: NSLocalizedString("error_subcription", bundle: .module, comment: ""), preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            let alert = UIAlertController(title: LocalizationSystem.error, message: LocalizationSystem.errorDescription, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: LocalizationSystem.ok, style: .default, handler: nil))
             self.viewController.present(alert, animated: true, completion: nil)
         }
     }
