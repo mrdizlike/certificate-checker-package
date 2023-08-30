@@ -10,6 +10,7 @@ import UIKit
 class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableViewDelegate {
     var tableView: UITableView!
     var certificate: CertificateInfo?
+    var certificateExtensionReader: CertificateExtensionsReader = CertificateExtensionsReader()
     var sections: [Section] = []
     
     override func viewDidLoad() {
@@ -58,7 +59,8 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
                 Row(title: LocalizationSystem.country, value: certificate?.subjectC),
                 Row(title: LocalizationSystem.organization, value: certificate?.subjectO),
                 Row(title: LocalizationSystem.state, value: certificate?.subjectL),
-                Row(title: LocalizationSystem.organizationalUnit, value: certificate?.subjectOU)
+                Row(title: LocalizationSystem.organizationalUnit, value: certificate?.subjectOU),
+                Row(title: LocalizationSystem.email, value: certificate?.email)
                 ]),
             Section(title: LocalizationSystem.issuer, rows: [
                 Row(title: LocalizationSystem.commonName, value: certificate?.issuerCN),
@@ -72,23 +74,21 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
                 Row(title: LocalizationSystem.validFor, value: "\(certificate!.validFor)"),
                 Row(title: LocalizationSystem.willExpireIn, value: "\(certificate!.willExpireIn)")
                 ]),
-            Section(title: LocalizationSystem.keyUsage, rows: [
-                Row(title: LocalizationSystem.basic, value: certificate?.keyUsageBasic),
-                Row(title: LocalizationSystem.extended, value: certificate?.keyUsageExtended)
-                ]),
             Section(title: LocalizationSystem.publicKey, rows: [
                 Row(title: LocalizationSystem.signatureAlgorithm, value: certificate?.signatureAlgorithm),
                 Row(title: LocalizationSystem.signature, value: certificate?.signature)
                 ]),
-            Section(title: LocalizationSystem.keyIdentifier, rows: [
-                Row(title: LocalizationSystem.subjectKeyId, value: certificate?.subjectKeyId),
-                Row(title: LocalizationSystem.authorityKeyId, value: certificate?.authorityKeyId)
-                ]),
             Section(title: LocalizationSystem.metadata, rows: [
                 Row(title: LocalizationSystem.serialNumber, value: certificate?.serialNumber),
-                Row(title: LocalizationSystem.certificateAuthority, value: certificate?.certificateAuthority),
-                Row(title: LocalizationSystem.version, value: certificate?.version)
-                ])
+                Row(title: LocalizationSystem.version, value: certificate?.version),
+                Row(title: "SHA256 FingerPrint", value: certificate?.sha256FingerPrint),
+                Row(title: "SHA1 FingerPrint", value: certificate?.sha1FingerPrint)
+                ]),
+            Section(title: "Certificate Extensions", rows: certificate!.certificateExtInfo.map { extensionInfo in
+                return Row(title: (certificateExtensionReader.oidStrings[extensionInfo.oid] ?? "Unknown Extension ") + " (\(extensionInfo.oid))" , value:
+                            "\(extensionInfo.value) \nCritical: \(CertificateUtils.formatBoolean(from: extensionInfo.critical.description))"
+                            )
+            })
             ]
         
         tableView = UITableView(frame: view.bounds, style: .grouped)

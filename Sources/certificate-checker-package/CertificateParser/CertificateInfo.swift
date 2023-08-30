@@ -15,6 +15,7 @@ struct CertificateInfo {
     let subjectL: String //Город/штат владельца
     let subjectO: String //Организация владельца
     let subjectOU: String //Организационный союз
+    let email: String //Почта
     //MARK: ISSUER
     let issuerCN: String //Издатель сертификата
     let issuerC: String //Страна издателя
@@ -25,18 +26,14 @@ struct CertificateInfo {
     let validityAfter: String //Дата ПОСЛЕ
     let validFor: String //Работает ДО
     let willExpireIn: String //Сколько уже работает
-    //MARK: KEY USAGE
-    let keyUsageBasic: String //Обычное использование ключа
-    let keyUsageExtended: String//Расширенное использование ключа
     //MARK: PUBLIC KEY
     let signatureAlgorithm: String //Алгоритм подписи
     let signature: String //Подпись сертификата
-    //MARK: KEY IDENTIFIER
-    let subjectKeyId: String //Идентификатор ключа владельца сертификата
-    let authorityKeyId: String //Идентификатор ключа издателя сертификата
     //MARK: METADATA
     let serialNumber: String //Серийный номер сертификата
-    let certificateAuthority: String //Доступ к информации издателя сертификата
     let version: String //Версия сертификата
+    let certificateExtInfo: [CertificateExtensionStruct]
+    let sha256FingerPrint: String
+    let sha1FingerPrint: String
 }
 

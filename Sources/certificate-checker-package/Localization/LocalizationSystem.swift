@@ -14,6 +14,7 @@ public struct LocalizationSystem {
     public static var organization = "Organization"
     public static var state = "State"
     public static var organizationalUnit = "Organizational Unit"
+    public static var email = "Email Address"
     public static var issuer = "ISSUER"
     public static var validityPeriod = "VALIDITY PERIOD"
     public static var validityBefore = "Validity Before"

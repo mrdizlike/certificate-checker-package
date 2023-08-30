@@ -12,6 +12,7 @@ import X509
 class CertificateParser: NSObject, URLSessionDelegate {
     var certificatesInfo: [CertificateInfo] = []
     var viewController: CertificateParserViewController!
+    var certificateExtensionReader: CertificateExtensionsReader = CertificateExtensionsReader()
     
     // Парсим сертификат по ссылке из интернета
     func parseCertificateFromURL(url: URL) {
@@ -50,12 +51,11 @@ class CertificateParser: NSObject, URLSessionDelegate {
             
             if let certificateInfo = parseCertificateInfo(pem: pemCode) {
                 certificatesInfo.append(certificateInfo)
-                viewController.activityIndicator.stopAnimating() // Скрываем плашку загрузки
-                showCertificates()
+                showCertificateFile()
             }
         } catch {
             //Не получается получить локальный файл, пробуем подключиться к серверу по ссылке
-            let formattedURL = URL(string: formatURL(url.absoluteString))!
+            let formattedURL = URL(string: CertificateUtils.formatURL(url.absoluteString))!
             parseCertificateFromURL(url: formattedURL)
             print("Error loading certificate from file, trying WEB")
         }
@@ -79,7 +79,7 @@ class CertificateParser: NSObject, URLSessionDelegate {
         }
         completionHandler(.performDefaultHandling, nil) // Завершение сессии
         
-        showCertificates()
+        showCertificatesBranch()
     }
     
     func convertToPEM(data: Data) -> String {
@@ -104,127 +104,58 @@ class CertificateParser: NSObject, URLSessionDelegate {
             return nil
         }
         
-        let keyUsageBasic: KeyUsage? = try? certificate.extensions.keyUsage
-        let keyUsageExtended: ExtendedKeyUsage? = try? certificate.extensions.extendedKeyUsage
-        let subjectKeyId: SubjectKeyIdentifier? = try? certificate.extensions.subjectKeyIdentifier
-        let authorityKeyId: AuthorityKeyIdentifier? = try? certificate.extensions.authorityKeyIdentifier
-        let certificateAuthority: AuthorityInformationAccess? = try? certificate.extensions.authorityInformationAccess
+        let subjectInfo = CertificateUtils.parseSubject(subject: certificate.subject.description)
+        let issuerInfo = CertificateUtils.parseSubject(subject: certificate.issuer.description)
         
-        
-        let subjectInfo = parseSubject(subject: certificate.subject.description)
-        let issuerInfo = parseSubject(subject: certificate.issuer.description)
-        
+        certificateExtensionReader.setNames(certificate: certificate)
+
         let info = CertificateInfo(
             subjectCN: subjectInfo["CN"] ?? "",
             subjectC: subjectInfo["C"] ?? "",
             subjectL: subjectInfo["L"] ?? "",
             subjectO: subjectInfo["O"] ?? "",
             subjectOU: subjectInfo["OU"] ?? "",
+            email: subjectInfo["1"] ?? "",
             issuerCN: issuerInfo["CN"] ?? "",
             issuerC: issuerInfo["C"] ?? "",
             issuerO: issuerInfo["O"] ?? "",
             issuerOU: issuerInfo["OU"] ?? "",
-            validityBefore: formatUTC(certificate.notValidBefore),
-            validityAfter: formatUTC(certificate.notValidAfter),
-            validFor: calculateTime(currentDate: certificate.notValidBefore, targetDate: certificate.notValidAfter),
-            willExpireIn: calculateTime(currentDate: Date(), targetDate: certificate.notValidAfter),
-            keyUsageBasic: keyUsageBasic?.description ?? "",
-            keyUsageExtended: keyUsageExtended?.description ?? "",
-            signatureAlgorithm: formatAlgorithmType(from: certificate.signature.description) ?? "",
+            validityBefore: CertificateUtils.formatUTC(certificate.notValidBefore),
+            validityAfter: CertificateUtils.formatUTC(certificate.notValidAfter),
+            validFor: CertificateUtils.calculateTime(currentDate: certificate.notValidBefore, targetDate: certificate.notValidAfter),
+            willExpireIn: CertificateUtils.calculateTime(currentDate: Date(), targetDate: certificate.notValidAfter),
+            signatureAlgorithm: CertificateUtils.formatAlgorithmType(from: certificate.signature.description) ?? "",
             signature: certificate.signatureAlgorithm.description.replacingOccurrences(of: "SignatureAlgorithm.", with: ""),
-            subjectKeyId: subjectKeyId?.description ?? "",
-            authorityKeyId: authorityKeyId?.description ?? "",
             serialNumber: certificate.serialNumber.description,
-            certificateAuthority: certificateAuthority?.description ?? "",
-            version: certificate.version.description 
-            
+            version: certificate.version.description,
+            certificateExtInfo: certificateExtensionReader.certificateExtInfo,
+            sha256FingerPrint: "",
+            sha1FingerPrint: ""
         )
+
+        print(certificate)
         
         return info
     }
     
-    // Парсим subject и issuer чтобы по человечески присвоить их переменным
-    func parseSubject(subject: String) -> [String: String] {
-        var parsedInfo: [String: String] = [:]
-        
-        let components = subject.split(separator: ",")
-        for component in components {
-            let keyValue = component.split(separator: "=", maxSplits: 1)
-            if keyValue.count == 2 {
-                let key = keyValue[0].trimmingCharacters(in: .whitespaces)
-                let value = keyValue[1].trimmingCharacters(in: .whitespaces)
-                parsedInfo[key] = value
-            }
-        }
-        
-        return parsedInfo
-    }
-    
-    //Форматируем ссылку которую ввел пользователь, чтобы правильно обратиться к адресу
-    func formatURL(_ urlString: String) -> String {
-        // Проверяем, начинается ли URL с https://www.
-        if urlString.hasPrefix("https://www.") {
-            return urlString
-        }
-        
-        // Если URL начинается с www., добавляем https://
-        if urlString.hasPrefix("www.") {
-            return "https://" + urlString
-        }
-        
-        // Если URL не содержит www., добавляем https://www.
-        if !urlString.contains("www.") && !urlString.contains("http://") && !urlString.contains("https://") {
-            return "https://www." + urlString
-        }
-        
-        // В противном случае возвращаем исходный URL
-        return urlString
-    }
-    
-    func formatUTC(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        formatter.timeZone = TimeZone(abbreviation: "UTC")
-        return formatter.string(from: date)
-    }
-    
-    func calculateTime(currentDate: Date, targetDate: Date) -> String {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.year, .month, .day], from: currentDate, to: targetDate)
-        
-        let years = components.year ?? 0
-        let months = components.month ?? 0
-        let days = components.day ?? 0
-        
-        if years != 0 {
-            return String(format: LocalizationSystem.daysMonthsYearsCount, years, months, days)
-        } else if months != 0{
-            return String(format: LocalizationSystem.daysMonthsCount, months, days)
-        } else {
-            return String(format: LocalizationSystem.daysCount, days)
-        }
-    }
-    
-    func formatAlgorithmType(from string: String) -> String? {
-        //Используется алгоритм ECDSA
-        if string.hasPrefix("ecdsa") {
-            return "ECDSA"
-        }
-        
-        //Используется алгоритм RSA
-        if string.hasPrefix("rsa") {
-            return "RSA"
-        }
-        return nil
-    }
-    
-    func showCertificates() {
+    func showCertificatesBranch() {
         DispatchQueue.main.async { // Работаем в основном потоке
             let availableCertificatesVC = ViewAvailableCertificates()
             availableCertificatesVC.certificates = self.certificatesInfo
             self.viewController.addChild(availableCertificatesVC)
             self.viewController.view.addSubview(availableCertificatesVC.view)
             availableCertificatesVC.didMove(toParent: self.viewController)
+            self.viewController.activityIndicator.stopAnimating() // Скрываем плашку загрузки
+        }
+    }
+    
+    func showCertificateFile() {
+        DispatchQueue.main.async {
+            let detailsVC = ViewCertificateDetails()
+            detailsVC.certificate = self.certificatesInfo.first
+            self.viewController.addChild(detailsVC)
+            self.viewController.view.addSubview(detailsVC.view)
+            detailsVC.didMove(toParent: self.viewController)
             self.viewController.activityIndicator.stopAnimating() // Скрываем плашку загрузки
         }
     }
