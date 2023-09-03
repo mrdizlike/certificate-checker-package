@@ -14,14 +14,16 @@ class CertificateExtensionsReader {
         "2.5.29.15": "KeyUsage",
         "2.5.29.17": "Subject Alternative Name",
         "2.5.29.19": "Basic Constraints",
+        "2.5.29.31": "cRLDistributionPoints",
         "2.5.29.32": "Certificate Policies",
         "2.5.29.35": "Authority Key Identifier",
         "2.5.29.37": "External KeyUsage",
-        "1.3.6.1.5.5.7.1.1": "Authority Access"
+        "1.3.6.1.5.5.7.1.1": "Authority Access",
+        "1.3.6.1.4.1.11129.2.4.2": "OID"
     ]
-    var certificateExtInfo: [CertificateExtensionStruct] = []
     
-    func setNames(certificate: Certificate) {
+    func setNames(certificate: Certificate) -> [CertificateExtensionStruct] {
+        var certificateExtInfo: [CertificateExtensionStruct] = []
         
         let certificateExtension: Certificate.Extensions = certificate.extensions
         let keyUsageBasic: KeyUsage? = try? certificateExtension.keyUsage
@@ -39,6 +41,7 @@ class CertificateExtensionsReader {
             
             if let name = oidStrings[oidString] {
                 let value: String
+
                 
                 switch oidString {
                 case "2.5.29.14":
@@ -48,13 +51,16 @@ class CertificateExtensionsReader {
                 case "2.5.29.17":
                     value = "\(subjectAlternativeNames?.description ?? "")"
                 case "2.5.29.19":
-                    value = "Certification: \(CertificateUtils.formatBoolean(from: basicConstraintsInfo["CA"] ?? ""))"
+                    value = "Certification bureau: \(CertificateUtils.formatBoolean(from: basicConstraintsInfo["CA"] ?? ""))"
                 case "2.5.29.35":
                     value = "\(authorityKeyId?.description ?? "")".uppercased()
                 case "2.5.29.37":
                     value = "Used: \(CertificateUtils.formatExtendedKeyUsage(keyUsageExtended?.description ?? ""))"
                 case "1.3.6.1.5.5.7.1.1":
                     value = "\(certificateAuthority?.description ?? "")"
+                case "1.3.6.1.4.1.11129.2.4.2":
+                    value = "Text encoding error" //Проблемы с кодировкой текста
+                    print(value)
                 default:
                     value = String(bytes: extensionInfo.value, encoding: .ascii) ?? ""
                 }
@@ -66,5 +72,6 @@ class CertificateExtensionsReader {
             
             certificateExtInfo.append(info)
         }
+        return certificateExtInfo
     }
 }

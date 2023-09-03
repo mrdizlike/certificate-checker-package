@@ -25,7 +25,7 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
 
     //Количество строк в подзаголовках
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return sections[section].rows.filter { checkField($0.value) != "none" }.count
+        return sections[section].rows.count
     }
 
     //Подзаголовки
@@ -55,40 +55,61 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
         title = certificate?.subjectCN
         sections = [
             Section(title: LocalizationSystem.subject, rows: [
+                Row(title: "userID", value: certificate?.userID),
                 Row(title: LocalizationSystem.commonName, value: certificate?.subjectCN),
-                Row(title: LocalizationSystem.country, value: certificate?.subjectC),
-                Row(title: LocalizationSystem.organization, value: certificate?.subjectO),
-                Row(title: LocalizationSystem.state, value: certificate?.subjectL),
                 Row(title: LocalizationSystem.organizationalUnit, value: certificate?.subjectOU),
+                Row(title: LocalizationSystem.organization, value: certificate?.subjectO),
+                Row(title: LocalizationSystem.country, value: certificate?.subjectC),
+                Row(title: LocalizationSystem.state, value: certificate?.subjectL),
                 Row(title: LocalizationSystem.email, value: certificate?.email)
-                ]),
+                ].filter { row in
+                    return checkField(row.value) != "none"
+                }),
             Section(title: LocalizationSystem.issuer, rows: [
                 Row(title: LocalizationSystem.commonName, value: certificate?.issuerCN),
-                Row(title: LocalizationSystem.country, value: certificate?.issuerC),
+                Row(title: LocalizationSystem.organizationalUnit, value: certificate?.issuerOU),
                 Row(title: LocalizationSystem.organization, value: certificate?.issuerO),
-                Row(title: LocalizationSystem.organizationalUnit, value: certificate?.issuerOU)
-                ]),
+                Row(title: LocalizationSystem.country, value: certificate?.issuerC)
+                ].filter { row in
+                    return checkField(row.value) != "none"
+                }),
+            Section(title: "Serial number", rows: [
+                Row(title: "Serial number", value: certificate?.serialNumber)].filter { row in
+                    return checkField(row.value) != "none"
+                }),
             Section(title: LocalizationSystem.validityPeriod, rows: [
                 Row(title: LocalizationSystem.validityBefore, value: "\(certificate!.validityBefore)"),
                 Row(title: LocalizationSystem.validityAfter, value: "\(certificate!.validityAfter)"),
                 Row(title: LocalizationSystem.validFor, value: "\(certificate!.validFor)"),
                 Row(title: LocalizationSystem.willExpireIn, value: "\(certificate!.willExpireIn)")
-                ]),
+                ].filter { row in
+                    return checkField(row.value) != "none"
+                }),
             Section(title: LocalizationSystem.publicKey, rows: [
                 Row(title: LocalizationSystem.signatureAlgorithm, value: certificate?.signatureAlgorithm),
-                Row(title: LocalizationSystem.signature, value: certificate?.signature)
-                ]),
-            Section(title: LocalizationSystem.metadata, rows: [
-                Row(title: LocalizationSystem.serialNumber, value: certificate?.serialNumber),
-                Row(title: LocalizationSystem.version, value: certificate?.version),
-                Row(title: "SHA256 FingerPrint", value: certificate?.sha256FingerPrint),
-                Row(title: "SHA1 FingerPrint", value: certificate?.sha1FingerPrint)
-                ]),
+                Row(title: "Modulus", value: certificate?.modulus),
+                Row(title: "Decimal", value: certificate?.decimalValue),
+                Row(title: "Block size", value: certificate?.blockSize),
+                Row(title: "Key size", value: certificate?.keySize)
+                ].filter { row in
+                    return checkField(row.value) != "none"
+                }),
             Section(title: "Certificate Extensions", rows: certificate!.certificateExtInfo.map { extensionInfo in
                 return Row(title: (certificateExtensionReader.oidStrings[extensionInfo.oid] ?? "Unknown Extension ") + " (\(extensionInfo.oid))" , value:
                             "\(extensionInfo.value) \nCritical: \(CertificateUtils.formatBoolean(from: extensionInfo.critical.description))"
-                            )
-            })
+                )
+            }),
+            Section(title: "Signature", rows: [
+                Row(title: LocalizationSystem.signature, value: certificate?.signature),
+                Row(title: "Signature", value: certificate?.signatureHex)
+            ]),
+            Section(title: "Fingerprints", rows: [
+                Row(title: "SHA-256", value: certificate?.sha256FingerPrint),
+                Row(title: "SHA-1", value: certificate?.sha1FingerPrint)
+            ]),
+            Section(title: "", rows: [
+                Row(title: LocalizationSystem.version, value: certificate?.version)
+            ])
             ]
         
         tableView = UITableView(frame: view.bounds, style: .grouped)

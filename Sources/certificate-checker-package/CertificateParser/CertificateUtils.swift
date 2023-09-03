@@ -7,18 +7,23 @@
 
 import Foundation
 import X509
+import CryptoKit
 
 class CertificateUtils {
     // Парсим subject и issuer чтобы по человечески присвоить их переменным
     static func parseSubject(subject: String) -> [String: String] {
+        var oidStrings = [
+            "emailAddress":"1.2.840.113549.1.9.1",
+            "userID":"0.9.2342.19200300.100.1.1"
+        ]
         var parsedInfo: [String: String] = [:]
         
         /*
-        (\w+) - захватывает ключ,
-        (.*?) - захватывает значение после знака равенства и перед запятой или концом строки,
-        (?=(,\w+=|$)) - опережающий поиск, который ищет запятую и следующие символы ключа и знака равенства, либо конец строки.
+        ([\w.]+) - захватывает последовательность символов, состоящих из букв, цифр и точек, что соответствует ключу,
+        (.*?) - lazy совпадение с любыми символами,
+        (?=(,[\w.]+=|$)) - группа ключа и значение завершаются либо запятой и началом следующего ключа, либо концом строки.
         */
-        let pattern = #"(\w+)=(.*?)(?=(,\w+=|$))"#
+        let pattern = #"([\w.]+)=(.*?)(?=(,[\w.]+=|$))"#
         
         if let regex = try? NSRegularExpression(pattern: pattern) {
             let matches = regex.matches(in: subject, range: NSRange(subject.startIndex..., in: subject)) // Ищем совпадения
@@ -33,10 +38,13 @@ class CertificateUtils {
                     key = key.replacingOccurrences(of: "\\,", with: ",")
                     value = value.replacingOccurrences(of: "\\,", with: ",")
 
-//                    if key == oidStrings["emailAddress"] {
-//                        value = decodeASN1String(value) ?? ""
-//                        print(value)
-//                    }
+                    if key == oidStrings["emailAddress"] {
+                        value = decodeASN1String(value) ?? ""
+                        print(value)
+                    }
+                    if key == oidStrings["userID"] {
+                        parsedInfo[key] = value
+                    }
                     
                     parsedInfo[key] = value
                 }
@@ -178,8 +186,10 @@ class CertificateUtils {
             return String(format: LocalizationSystem.daysMonthsYearsCount, years, months, days)
         } else if months != 0{
             return String(format: LocalizationSystem.daysMonthsCount, months, days)
-        } else {
+        } else if days > 0 {
             return String(format: LocalizationSystem.daysCount, days)
+        } else {
+            return "Expired"
         }
     }
     
@@ -197,13 +207,61 @@ class CertificateUtils {
     }
     
     static func formatBoolean(from string: String) -> String {
-        string.lowercased()
+        let formattedString = string.lowercased()
 
-        if string == "true" {
+        if formattedString == "true" {
             return "Yes"
         } else {
             return "No"
         }
     }
+    
+    //Парсим hex значение SHA256
+    static func parseSHA256Digest(digest: SHA256Digest?) -> String {
+        if let sha256Digest = digest {
+            return sha256Digest.map { String(format: "%02hhx", $0) }.joined(separator: " ")
+        } else {
+            return ""
+        }
+    }
+    
+    //Парсим hex значение SHA1
+    static func parseSHA1Digest(digest: Insecure.SHA1Digest?) -> String {
+        if let sha1Digest = digest {
+            return sha1Digest.map { String(format: "%02hhx", $0) }.joined(separator: " ")
+        } else {
+            return ""
+        }
+    }
+    
+    static func formatSignatureAlgorithm(_ signatureAlgorithm: String) -> String {
+        var description: String {
+            var algorithm: String = ""
 
+            if signatureAlgorithm == "SignatureAlgorithm.sha1WithRSAEncryption" {
+                algorithm = "SHA-1 With RSA Encryption"
+            }
+            if signatureAlgorithm == "SignatureAlgorithm.sha256WithRSAEncryption" {
+                algorithm = "SHA-256 With RSA Encryption"
+            }
+            if signatureAlgorithm == "SignatureAlgorithm.sha384WithRSAEncryption" {
+                algorithm = "SHA-384 With RSA Encryption"
+            }
+            if signatureAlgorithm == "SignatureAlgorithm.sha512WithRSAEncryption" {
+                algorithm = "SHA-512 With RSA Encryption"
+            }
+            if signatureAlgorithm == "SignatureAlgorithm.ecdsaWithSHA256" {
+                algorithm = "SHA-1 With ECDSA Encryption"
+            }
+            if signatureAlgorithm == "SignatureAlgorithm.ecdsaWithSHA384" {
+                algorithm = "SHA-384 With ECDSA Encryption"
+            }
+            if signatureAlgorithm == "SignatureAlgorithm.ecdsaWithSHA512" {
+                algorithm = "SHA-512 With ECDSA Encryption"
+            }
+
+            return algorithm
+        }
+        return description
+    }
 }

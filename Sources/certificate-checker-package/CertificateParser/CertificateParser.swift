@@ -8,11 +8,20 @@
 import Foundation
 import UIKit
 import X509
+import CryptoKit
 
 class CertificateParser: NSObject, URLSessionDelegate {
     var certificatesInfo: [CertificateInfo] = []
     var viewController: CertificateParserViewController!
     var certificateExtensionReader: CertificateExtensionsReader = CertificateExtensionsReader()
+    
+    var modulus: String = ""
+    var blockSize: String = ""
+    var keySize: String = ""
+    var decimalValue: String = ""
+    var signatureHex: String = ""
+    var _SHA256FingerPrint: SHA256Digest?
+    var _SHA1FingerPrint: Insecure.SHA1Digest?
     
     // Парсим сертификат по ссылке из интернета
     func parseCertificateFromURL(url: URL) {
@@ -48,6 +57,12 @@ class CertificateParser: NSObject, URLSessionDelegate {
             }
             let derData = SecCertificateCopyData(certificate) as Data
             let pemCode = convertToPEM(data: derData)
+            let key = SecCertificateCopyKey(certificate)
+            
+            parseSecKey(key: String("\(key)")) // Парсим значения ключа
+            _SHA256FingerPrint = SHA256.hash(data: derData) // Парсим отпечаток SHA-256
+            _SHA1FingerPrint = Insecure.SHA1.hash(data: derData) // Парсим отпечаток SHA-1
+            signatureHex = parseHexSignature(derData: derData) //Парсим значение подписи
             
             if let certificateInfo = parseCertificateInfo(pem: pemCode) {
                 certificatesInfo.append(certificateInfo)
@@ -68,8 +83,14 @@ class CertificateParser: NSObject, URLSessionDelegate {
             let certCount = SecTrustGetCertificateCount(serverTrust)
             for i in 0 ..< certCount { // Достаем цепочку сертификатов, от root до самого сайта
                 if let certificate = SecTrustGetCertificateAtIndex(serverTrust, i) {
-                    let data = SecCertificateCopyData(certificate) as Data
-                    let pemCode = convertToPEM(data: data)
+                    let derData = SecCertificateCopyData(certificate) as Data
+                    let pemCode = convertToPEM(data: derData)
+                    let key = SecCertificateCopyKey(certificate)
+                    
+                    parseSecKey(key: String("\(key)")) // Парсим значения ключа
+                    _SHA256FingerPrint = SHA256.hash(data: derData) // Парсим отпечаток SHA-256
+                    _SHA1FingerPrint = Insecure.SHA1.hash(data: derData) // Парсим отпечаток SHA-1
+                    signatureHex = parseHexSignature(derData: derData) //Парсим значение подписи
                     
                     if let certificateInfo = parseCertificateInfo(pem: pemCode) { // После того как получили данные, заносим их в массив данных
                         certificatesInfo.append(certificateInfo)
@@ -107,15 +128,15 @@ class CertificateParser: NSObject, URLSessionDelegate {
         let subjectInfo = CertificateUtils.parseSubject(subject: certificate.subject.description)
         let issuerInfo = CertificateUtils.parseSubject(subject: certificate.issuer.description)
         
-        certificateExtensionReader.setNames(certificate: certificate)
 
         let info = CertificateInfo(
+            userID: subjectInfo["0.9.2342.19200300.100.1.1"] ?? "none",
             subjectCN: subjectInfo["CN"] ?? "",
             subjectC: subjectInfo["C"] ?? "",
             subjectL: subjectInfo["L"] ?? "",
             subjectO: subjectInfo["O"] ?? "",
             subjectOU: subjectInfo["OU"] ?? "",
-            email: subjectInfo["1"] ?? "",
+            email: subjectInfo["1.2.840.113549.1.9.1"] ?? "",
             issuerCN: issuerInfo["CN"] ?? "",
             issuerC: issuerInfo["C"] ?? "",
             issuerO: issuerInfo["O"] ?? "",
@@ -125,16 +146,19 @@ class CertificateParser: NSObject, URLSessionDelegate {
             validFor: CertificateUtils.calculateTime(currentDate: certificate.notValidBefore, targetDate: certificate.notValidAfter),
             willExpireIn: CertificateUtils.calculateTime(currentDate: Date(), targetDate: certificate.notValidAfter),
             signatureAlgorithm: CertificateUtils.formatAlgorithmType(from: certificate.signature.description) ?? "",
-            signature: certificate.signatureAlgorithm.description.replacingOccurrences(of: "SignatureAlgorithm.", with: ""),
-            serialNumber: certificate.serialNumber.description,
+            modulus: modulus.lowercased(),
+            keySize: keySize,
+            blockSize: blockSize,
+            decimalValue: decimalValue,
+            signature: CertificateUtils.formatSignatureAlgorithm(certificate.signatureAlgorithm.description),
+            signatureHex: signatureHex,
+            serialNumber: certificate.serialNumber.description.uppercased(),
             version: certificate.version.description,
-            certificateExtInfo: certificateExtensionReader.certificateExtInfo,
-            sha256FingerPrint: "",
-            sha1FingerPrint: ""
+            certificateExtInfo: certificateExtensionReader.setNames(certificate: certificate),
+            sha256FingerPrint: CertificateUtils.parseSHA256Digest(digest: _SHA256FingerPrint),
+            sha1FingerPrint: CertificateUtils.parseSHA1Digest(digest: _SHA1FingerPrint)
         )
 
-        print(certificate)
-        
         return info
     }
     
@@ -166,5 +190,58 @@ class CertificateParser: NSObject, URLSessionDelegate {
             alert.addAction(UIAlertAction(title: LocalizationSystem.ok, style: .default, handler: nil))
             self.viewController.present(alert, animated: true, completion: nil)
         }
+    }
+    
+    //Парсим данные из публичного ключа
+    func parseSecKey(key: String) {
+        
+        // Регулярные выражения для нахождения значений
+        let exponentRegex = try! NSRegularExpression(pattern: "exponent: \\{hex: (\\w+), decimal: (\\w+)", options: [])
+        let modulusRegex = try! NSRegularExpression(pattern: "modulus: (\\w+)", options: [])
+        let blockSizeRegex = try! NSRegularExpression(pattern: "(\\d+) bits \\(block size: (\\d+)", options: [])
+
+        // Извлекаем значения modulus, exponent и block size с помощью регулярных выражений
+        if let exponentMatch = exponentRegex.firstMatch(in: key, options: [], range: NSRange(location: 0, length: key.count)) {
+            if let decimalRange = Range(exponentMatch.range(at: 2), in: key) {
+                decimalValue = String(key[decimalRange])
+            }
+        }
+
+        if let modulusMatch = modulusRegex.firstMatch(in: key, options: [], range: NSRange(location: 0, length: key.count)) {
+            if let modulusRange = Range(modulusMatch.range(at: 1), in: key) {
+                modulus = String(key[modulusRange])
+                
+                modulus = modulus.enumerated().map { (index, char) in
+                    index % 2 == 0 ? "\(char)" : "\(char) "
+                }.joined() //Добавляем пробелы каждые две строки
+            }
+        }
+
+        if let blockSizeMatch = blockSizeRegex.firstMatch(in: key, options: [], range: NSRange(location: 0, length: key.count)) {
+            if let bitsRange = Range(blockSizeMatch.range(at: 1), in: key){
+                keySize = String(key[bitsRange])
+            }
+            
+            if let blockSizeRange = Range(blockSizeMatch.range(at: 2), in: key) {
+                blockSize = String(key[blockSizeRange])
+            }
+        }
+    }
+    
+    // Парсим значение подписи
+    func parseHexSignature(derData: Data) -> String {
+        if blockSize == "256" {
+            let signatureData = derData.suffix(256)
+            return signatureData.map { String(format: "%02x", $0) }.joined(separator: " ")
+        }
+        if blockSize == "384" {
+            let signatureData = derData.suffix(384)
+            return signatureData.map { String(format: "%02x", $0) }.joined(separator: " ")
+        }
+        if blockSize == "512" {
+            let signatureData = derData.suffix(512)
+            return signatureData.map { String(format: "%02x", $0) }.joined(separator: " ")
+        }
+        return ""
     }
 }
