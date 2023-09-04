@@ -12,6 +12,7 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
     var certificate: CertificateInfo?
     var certificateExtensionReader: CertificateExtensionsReader = CertificateExtensionsReader()
     var sections: [Section] = []
+    var extensionSections: [Section] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -53,9 +54,19 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
     
     func setupViewController() {
         title = certificate?.subjectCN
+        
+        // Делаем по секции на каждое найденное расширение сертификата
+        for extensionInfo in certificate!.certificateExtInfo {
+            let extensionSection = Section(title: (certificateExtensionReader.oidStrings[extensionInfo.oid] ?? "Unknown Extension ") + " (\(extensionInfo.oid))", rows: [
+                Row(title: LocalizationSystem.value, value: extensionInfo.value),
+                Row(title: LocalizationSystem.critical, value: CertificateUtils.formatBoolean(from: extensionInfo.critical.description))
+            ])
+            extensionSections.append(extensionSection)
+        }
+        
         sections = [
             Section(title: LocalizationSystem.subject, rows: [
-                Row(title: "userID", value: certificate?.userID),
+                Row(title: LocalizationSystem.userID, value: certificate?.userID),
                 Row(title: LocalizationSystem.commonName, value: certificate?.subjectCN),
                 Row(title: LocalizationSystem.organizationalUnit, value: certificate?.subjectOU),
                 Row(title: LocalizationSystem.organization, value: certificate?.subjectO),
@@ -73,8 +84,8 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
                 ].filter { row in
                     return checkField(row.value) != "none"
                 }),
-            Section(title: "Serial number", rows: [
-                Row(title: "Serial number", value: certificate?.serialNumber)].filter { row in
+            Section(title: LocalizationSystem.serialNumber, rows: [
+                Row(title: LocalizationSystem.serialNumber, value: certificate?.serialNumber)].filter { row in
                     return checkField(row.value) != "none"
                 }),
             Section(title: LocalizationSystem.validityPeriod, rows: [
@@ -87,30 +98,25 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
                 }),
             Section(title: LocalizationSystem.publicKey, rows: [
                 Row(title: LocalizationSystem.signatureAlgorithm, value: certificate?.signatureAlgorithm),
-                Row(title: "Modulus", value: certificate?.modulus),
-                Row(title: "Decimal", value: certificate?.decimalValue),
-                Row(title: "Block size", value: certificate?.blockSize),
-                Row(title: "Key size", value: certificate?.keySize)
+                Row(title: LocalizationSystem.modulus, value: certificate?.modulus),
+                Row(title: LocalizationSystem.decimal, value: certificate?.decimalValue),
+                Row(title: LocalizationSystem.blockSize, value: certificate?.blockSize),
+                Row(title: LocalizationSystem.keySize, value: certificate?.keySize)
                 ].filter { row in
                     return checkField(row.value) != "none"
                 }),
-            Section(title: "Certificate Extensions", rows: certificate!.certificateExtInfo.map { extensionInfo in
-                return Row(title: (certificateExtensionReader.oidStrings[extensionInfo.oid] ?? "Unknown Extension ") + " (\(extensionInfo.oid))" , value:
-                            "\(extensionInfo.value) \nCritical: \(CertificateUtils.formatBoolean(from: extensionInfo.critical.description))"
-                )
-            }),
-            Section(title: "Signature", rows: [
+            Section(title: LocalizationSystem.signature, rows: [
                 Row(title: LocalizationSystem.signature, value: certificate?.signature),
-                Row(title: "Signature", value: certificate?.signatureHex)
+                Row(title: LocalizationSystem.signature, value: certificate?.signatureHex)
             ]),
-            Section(title: "Fingerprints", rows: [
-                Row(title: "SHA-256", value: certificate?.sha256FingerPrint),
-                Row(title: "SHA-1", value: certificate?.sha1FingerPrint)
+            Section(title: LocalizationSystem.fingerPrints, rows: [
+                Row(title: LocalizationSystem.sha256, value: certificate?.sha256FingerPrint),
+                Row(title: LocalizationSystem.sha1, value: certificate?.sha1FingerPrint)
             ]),
             Section(title: "", rows: [
                 Row(title: LocalizationSystem.version, value: certificate?.version)
             ])
-            ]
+            ] + extensionSections
         
         tableView = UITableView(frame: view.bounds, style: .grouped)
         tableView.delegate = self
