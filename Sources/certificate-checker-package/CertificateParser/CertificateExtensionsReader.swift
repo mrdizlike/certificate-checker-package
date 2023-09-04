@@ -51,9 +51,10 @@ class CertificateExtensionsReader {
                 case "2.5.29.17":
                     value = "\(subjectAlternativeNames?.description ?? "")"
                 case "2.5.29.19":
-                    value = "Certification bureau: \(CertificateUtils.formatBoolean(from: basicConstraintsInfo["CA"] ?? ""))"
+                    value = "\(CertificateUtils.formatBoolean(from: basicConstraintsInfo["CA"] ?? ""))"
                 case "2.5.29.35":
-                    value = "\(authorityKeyId?.description ?? "")".uppercased()
+                    value = "\(authorityKeyId?.description.replacingOccurrences(of: "keyID: ", with: "") ?? "")"
+                    print(value)
                 case "2.5.29.37":
                     value = "Used: \(CertificateUtils.formatExtendedKeyUsage(keyUsageExtended?.description ?? ""))"
                 case "1.3.6.1.5.5.7.1.1":
