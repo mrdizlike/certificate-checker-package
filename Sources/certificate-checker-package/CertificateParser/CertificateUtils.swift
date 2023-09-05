@@ -80,31 +80,31 @@ class CertificateUtils {
             var enabledUsages: [String] = []
 
             if key.digitalSignature {
-                enabledUsages.append("Digital Signature")
+                enabledUsages.append(LocalizationSystem.digitalSignature)
             }
             if key.nonRepudiation {
-                enabledUsages.append("Non Repudiation")
+                enabledUsages.append(LocalizationSystem.nonRepudiation)
             }
             if key.keyEncipherment {
-                enabledUsages.append("Key Encipherment")
+                enabledUsages.append(LocalizationSystem.keyEncipherment)
             }
             if key.dataEncipherment {
-                enabledUsages.append("Data Encipherment")
+                enabledUsages.append(LocalizationSystem.dataEncipherment)
             }
             if key.keyAgreement {
-                enabledUsages.append("Key Agreement")
+                enabledUsages.append(LocalizationSystem.keyAgreement)
             }
             if key.keyCertSign {
-                enabledUsages.append("Key CertSign")
+                enabledUsages.append(LocalizationSystem.keyCertSign)
             }
             if key.cRLSign {
-                enabledUsages.append("CRLSign")
+                enabledUsages.append(LocalizationSystem.CRLSign)
             }
             if key.encipherOnly {
-                enabledUsages.append("Encipher Only")
+                enabledUsages.append(LocalizationSystem.encipherOnly)
             }
             if key.decipherOnly {
-                enabledUsages.append("Decipher Only")
+                enabledUsages.append(LocalizationSystem.decipherOnly)
             }
 
             return enabledUsages.joined(separator: ", ")
@@ -117,28 +117,28 @@ class CertificateUtils {
             var enabledUsages: [String] = []
 
             if key == "serverAuth" {
-                enabledUsages.append("Server Auth")
+                enabledUsages.append(LocalizationSystem.serverAuth)
             }
             if key == "clientAuth" {
-                enabledUsages.append("Client Auth")
+                enabledUsages.append(LocalizationSystem.clientAuth)
             }
             if key == "codeSigning" {
-                enabledUsages.append("Code Signing")
+                enabledUsages.append(LocalizationSystem.codeSigning)
             }
             if key == "emailProtection" {
-                enabledUsages.append("Email Protection")
+                enabledUsages.append(LocalizationSystem.emailProtection)
             }
             if key == "timeStamping" {
-                enabledUsages.append("Time Stamping")
+                enabledUsages.append(LocalizationSystem.timeStamping)
             }
             if key == "ocspSigning" {
-                enabledUsages.append("OCSP Signing")
+                enabledUsages.append(LocalizationSystem.OCSPSigning)
             }
             if key == "any" {
-                enabledUsages.append("Any")
+                enabledUsages.append(LocalizationSystem.any)
             }
             if key == "certificateTransparency" {
-                enabledUsages.append("Certificate Transparency")
+                enabledUsages.append(LocalizationSystem.certificateTransparency)
             }
 
             return enabledUsages.joined(separator: ", ")
@@ -189,7 +189,7 @@ class CertificateUtils {
         } else if days > 0 {
             return String(format: LocalizationSystem.daysCount, days)
         } else {
-            return "Expired"
+            return LocalizationSystem.expired
         }
     }
     
@@ -210,9 +210,9 @@ class CertificateUtils {
         let formattedString = string.lowercased()
 
         if formattedString == "true" {
-            return "Yes"
+            return LocalizationSystem.yes
         } else {
-            return "No"
+            return LocalizationSystem.no
         }
     }
     
@@ -239,25 +239,25 @@ class CertificateUtils {
             var algorithm: String = ""
 
             if signatureAlgorithm == "SignatureAlgorithm.sha1WithRSAEncryption" {
-                algorithm = "SHA-1 With RSA Encryption"
+                algorithm = LocalizationSystem.sha1RSAEncryption
             }
             if signatureAlgorithm == "SignatureAlgorithm.sha256WithRSAEncryption" {
-                algorithm = "SHA-256 With RSA Encryption"
+                algorithm = LocalizationSystem.sha256RSAEncryption
             }
             if signatureAlgorithm == "SignatureAlgorithm.sha384WithRSAEncryption" {
-                algorithm = "SHA-384 With RSA Encryption"
+                algorithm = LocalizationSystem.sha384RSAEncryption
             }
             if signatureAlgorithm == "SignatureAlgorithm.sha512WithRSAEncryption" {
-                algorithm = "SHA-512 With RSA Encryption"
+                algorithm = LocalizationSystem.sha512RSAEncryption
             }
             if signatureAlgorithm == "SignatureAlgorithm.ecdsaWithSHA256" {
-                algorithm = "SHA-1 With ECDSA Encryption"
+                algorithm = LocalizationSystem.sha1ECDSAEncryption
             }
             if signatureAlgorithm == "SignatureAlgorithm.ecdsaWithSHA384" {
-                algorithm = "SHA-384 With ECDSA Encryption"
+                algorithm = LocalizationSystem.sha384ECDSAEncryption
             }
             if signatureAlgorithm == "SignatureAlgorithm.ecdsaWithSHA512" {
-                algorithm = "SHA-512 With ECDSA Encryption"
+                algorithm = LocalizationSystem.sha512ECDSAEncryption
             }
 
             return algorithm

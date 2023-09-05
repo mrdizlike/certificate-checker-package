@@ -10,16 +10,16 @@ import X509
 
 class CertificateExtensionsReader {
     var oidStrings: [String: String] = [
-        "2.5.29.14": "Subject Key Identifier",
-        "2.5.29.15": "KeyUsage",
-        "2.5.29.17": "Subject Alternative Name",
-        "2.5.29.19": "Basic Constraints",
-        "2.5.29.31": "cRLDistributionPoints",
-        "2.5.29.32": "Certificate Policies",
-        "2.5.29.35": "Authority Key Identifier",
-        "2.5.29.37": "External KeyUsage",
-        "1.3.6.1.5.5.7.1.1": "Authority Access",
-        "1.3.6.1.4.1.11129.2.4.2": "OID"
+        "2.5.29.14": LocalizationSystem.subjectKeyIdentifier,
+        "2.5.29.15": LocalizationSystem.keyUsage,
+        "2.5.29.17": LocalizationSystem.subjectAlternativeName,
+        "2.5.29.19": LocalizationSystem.basicConstraints,
+        "2.5.29.31": LocalizationSystem.cRLDistributionPoints,
+        "2.5.29.32": LocalizationSystem.certificatePolicies,
+        "2.5.29.35": LocalizationSystem.authorityKeyIdentifier,
+        "2.5.29.37": LocalizationSystem.externalKeyUsage,
+        "1.3.6.1.5.5.7.1.1": LocalizationSystem.authorityAccess,
+        "1.3.6.1.4.1.11129.2.4.2": LocalizationSystem.OID
     ]
     
     func setNames(certificate: Certificate) -> [CertificateExtensionStruct] {
@@ -56,11 +56,11 @@ class CertificateExtensionsReader {
                     value = "\(authorityKeyId?.description.replacingOccurrences(of: "keyID: ", with: "") ?? "")"
                     print(value)
                 case "2.5.29.37":
-                    value = "Used: \(CertificateUtils.formatExtendedKeyUsage(keyUsageExtended?.description ?? ""))"
+                    value = "\(CertificateUtils.formatExtendedKeyUsage(keyUsageExtended?.description ?? ""))"
                 case "1.3.6.1.5.5.7.1.1":
                     value = "\(certificateAuthority?.description ?? "")"
                 case "1.3.6.1.4.1.11129.2.4.2":
-                    value = "Text encoding error" //Проблемы с кодировкой текста
+                    value = LocalizationSystem.error //Проблемы с кодировкой текста
                     print(value)
                 default:
                     value = String(bytes: extensionInfo.value, encoding: .ascii) ?? ""
