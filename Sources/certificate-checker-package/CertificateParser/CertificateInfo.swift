@@ -13,7 +13,8 @@ struct CertificateInfo {
     let userID: String //Идентификатор пользователя
     let subjectCN: String //Владелец сертификата
     let subjectC: String //Страна владельца
-    let subjectL: String //Город/штат владельца
+    let subjectL: String //Locality владельца
+    let subjectS: String //StateOrProvinceName владельца
     let subjectO: String //Организация владельца
     let subjectOU: String //Организационный союз
     let email: String //Почта

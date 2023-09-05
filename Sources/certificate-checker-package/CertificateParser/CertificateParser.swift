@@ -124,23 +124,20 @@ class CertificateParser: NSObject, URLSessionDelegate {
             print("Error!")
             return nil
         }
-        
-        let subjectInfo = CertificateUtils.parseSubject(subject: certificate.subject.description)
-        let issuerInfo = CertificateUtils.parseSubject(subject: certificate.issuer.description)
-        
 
         let info = CertificateInfo(
-            userID: subjectInfo["0.9.2342.19200300.100.1.1"] ?? "none",
-            subjectCN: subjectInfo["CN"] ?? "",
-            subjectC: subjectInfo["C"] ?? "",
-            subjectL: subjectInfo["L"] ?? "",
-            subjectO: subjectInfo["O"] ?? "",
-            subjectOU: subjectInfo["OU"] ?? "",
-            email: subjectInfo["1.2.840.113549.1.9.1"] ?? "",
-            issuerCN: issuerInfo["CN"] ?? "",
-            issuerC: issuerInfo["C"] ?? "",
-            issuerO: issuerInfo["O"] ?? "",
-            issuerOU: issuerInfo["OU"] ?? "",
+            userID: certificate.subject.userID ?? "none",
+            subjectCN: certificate.subject.commonName ?? "",
+            subjectC: certificate.subject.countryName ?? "",
+            subjectL: certificate.subject.localityName ?? "",
+            subjectS: certificate.subject.stateOrProvinceName ?? "",
+            subjectO: certificate.subject.organizationName ?? "",
+            subjectOU: certificate.subject.organizationalUnitName ?? "",
+            email: certificate.subject.emailAddress ?? "",
+            issuerCN: certificate.issuer.commonName ?? "",
+            issuerC: certificate.issuer.countryName ?? "",
+            issuerO: certificate.issuer.organizationName ?? "",
+            issuerOU: certificate.issuer.organizationalUnitName ?? "",
             validityBefore: CertificateUtils.formatUTC(certificate.notValidBefore),
             validityAfter: CertificateUtils.formatUTC(certificate.notValidAfter),
             validFor: CertificateUtils.calculateTime(currentDate: certificate.notValidBefore, targetDate: certificate.notValidAfter),
@@ -153,7 +150,7 @@ class CertificateParser: NSObject, URLSessionDelegate {
             signature: CertificateUtils.formatSignatureAlgorithm(certificate.signatureAlgorithm.description),
             signatureHex: signatureHex,
             serialNumber: certificate.serialNumber.description.uppercased(),
-            version: certificate.version.description,
+            version: certificate.version.number,
             certificateExtInfo: certificateExtensionReader.setNames(certificate: certificate),
             sha256FingerPrint: CertificateUtils.parseSHA256Digest(digest: _SHA256FingerPrint),
             sha1FingerPrint: CertificateUtils.parseSHA1Digest(digest: _SHA1FingerPrint)
