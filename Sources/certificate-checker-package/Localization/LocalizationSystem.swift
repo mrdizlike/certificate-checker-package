@@ -13,6 +13,7 @@ public struct LocalizationSystem {
     public static var country = "Country"
     public static var organization = "Organization"
     public static var state = "State"
+    public static var location = "Location"
     public static var organizationalUnit = "Organizational Unit"
     public static var email = "Email Address"
     public static var issuer = "ISSUER"

@@ -8,7 +8,21 @@
 import UIKit
 
 class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableViewDelegate {
-    var tableView: UITableView!
+    private lazy var tableView: UITableView = {
+        $0.delegate = self
+        $0.dataSource = self
+        $0.tableFooterView = UIView(
+            frame:
+                CGRect(
+                    origin: .zero,
+                    size: CGSize(width: 0, height: 100)
+                )
+        )
+        $0.allowsSelection = false
+        $0.register(CustomCell.self, forCellReuseIdentifier: "cell")
+        return $0
+    }(UITableView(frame: .zero, style: .grouped))
+    
     var certificate: CertificateInfo?
     var certificateExtensionReader: CertificateExtensionsReader = CertificateExtensionsReader()
     var sections: [Section] = []
@@ -71,7 +85,8 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
                 Row(title: LocalizationSystem.organizationalUnit, value: certificate?.subjectOU),
                 Row(title: LocalizationSystem.organization, value: certificate?.subjectO),
                 Row(title: LocalizationSystem.country, value: certificate?.subjectC),
-                Row(title: LocalizationSystem.state, value: certificate?.subjectL),
+                Row(title: LocalizationSystem.state, value: certificate?.subjectS),
+                Row(title: LocalizationSystem.location, value: certificate?.subjectL),
                 Row(title: LocalizationSystem.email, value: certificate?.email)
                 ].filter { row in
                     return checkField(row.value) != "none"
@@ -118,10 +133,14 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
             ])
             ] + extensionSections
         
-        tableView = UITableView(frame: view.bounds, style: .grouped)
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.register(CustomCell.self, forCellReuseIdentifier: "cell")
         view.addSubview(tableView)
+        
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            tableView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            tableView.rightAnchor.constraint(equalTo: view.rightAnchor),
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
     }
 }
