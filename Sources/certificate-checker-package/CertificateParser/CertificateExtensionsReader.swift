@@ -7,8 +7,10 @@
 
 import Foundation
 import X509
+import SwiftASN1
 
 class CertificateExtensionsReader {
+    var certificateExtension: Certificate.Extensions? = nil
     var oidStrings: [String: String] = [
         "2.5.29.14": LocalizationSystem.subjectKeyIdentifier,
         "2.5.29.15": LocalizationSystem.keyUsage,
@@ -19,52 +21,76 @@ class CertificateExtensionsReader {
         "2.5.29.35": LocalizationSystem.authorityKeyIdentifier,
         "2.5.29.37": LocalizationSystem.externalKeyUsage,
         "1.3.6.1.5.5.7.1.1": LocalizationSystem.authorityAccess,
-        "1.3.6.1.4.1.11129.2.4.2": LocalizationSystem.OID
+        "1.3.6.1.4.1.11129.2.4.2": LocalizationSystem.OID,
+        "1.2.840.113635.100.6.1.2": LocalizationSystem.appleDeveloperCertificate,
+        "1.2.840.113635.100.6.1.12": LocalizationSystem.unknownOID
     ]
     
+    //форматируем и при необходимости декодируем значение OID сертификата
+    func decodeExtensionValue(oid: String, value: Data) -> String {
+        let hexString = value.hexEncodedString
+        let keyUsageBasic: KeyUsage? = try? certificateExtension?.keyUsage
+        let subjectAlternativeNames: SubjectAlternativeNames? = try? certificateExtension?.subjectAlternativeNames
+        let keyUsageExtended: ExtendedKeyUsage? = try? certificateExtension?.extendedKeyUsage
+        let basicConstraints: BasicConstraints? = try? certificateExtension?.basicConstraints
+        let subjectKeyId: SubjectKeyIdentifier? = try? certificateExtension?.subjectKeyIdentifier
+        let authorityKeyId: AuthorityKeyIdentifier? = try? certificateExtension?.authorityKeyIdentifier
+        let certificateAuthority: AuthorityInformationAccess? = try? certificateExtension?.authorityInformationAccess
+        let basicConstraintsInfo = CertificateUtils.parseSubject(subject: basicConstraints?.description ?? "")
+        
+        switch oid {
+        case "2.5.29.14":
+            return subjectKeyId?.description ?? ""
+        case "2.5.29.15":
+            return CertificateUtils.formatKeyUsage(keyUsageBasic ?? KeyUsage())
+        case "2.5.29.17":
+            return subjectAlternativeNames?.description ?? ""
+        case "2.5.29.19":
+            return CertificateUtils.formatBoolean(from: basicConstraintsInfo["CA"] ?? "")
+        case "2.5.29.31":
+            let decodedString = String(data: value, encoding: .ascii) ?? hexString
+            let urls = decodedString.extractURLs()
+            if let firstURL = urls.first {
+                return firstURL.absoluteString
+            }
+            return decodedString
+        case "2.5.29.32":
+            let decodedString = String(data: value, encoding: .ascii) ?? hexString
+            let urls = decodedString.extractURLs()
+            if let firstURL = urls.first {
+                return firstURL.absoluteString
+            }
+            return decodedString
+        case "2.5.29.35":
+            return authorityKeyId?.description.replacingOccurrences(of: "keyID: ", with: "") ?? ""
+        case "2.5.29.37":
+            return keyUsageExtended?.description ?? ""
+        case "1.2.840.113635.100.6.1.2":
+            return hexString
+        case "1.2.840.113635.100.6.1.12":
+            return hexString
+        case "1.3.6.1.5.5.7.1.1":
+            return certificateAuthority?.description ?? ""
+        case "1.3.6.1.4.1.11129.2.4.2":
+            return hexString.uppercased()
+        default:
+            print("\(LocalizationSystem.unknownOID) : \(oid)")
+        }
+        return hexString
+    }
+    
+    // Находим расширения, преобразовываем все в человеческий вид и возвращаем массив с готовыми расширениями
     func setNames(certificate: Certificate) -> [CertificateExtensionStruct] {
         var certificateExtInfo: [CertificateExtensionStruct] = []
-        
-        let certificateExtension: Certificate.Extensions = certificate.extensions
-        let keyUsageBasic: KeyUsage? = try? certificateExtension.keyUsage
-        let subjectAlternativeNames: SubjectAlternativeNames? = try? certificateExtension.subjectAlternativeNames
-        let keyUsageExtended: ExtendedKeyUsage? = try? certificateExtension.extendedKeyUsage
-        let basicConstraints: BasicConstraints? = try? certificateExtension.basicConstraints
-        let subjectKeyId: SubjectKeyIdentifier? = try? certificateExtension.subjectKeyIdentifier
-        let authorityKeyId: AuthorityKeyIdentifier? = try? certificateExtension.authorityKeyIdentifier
-        let certificateAuthority: AuthorityInformationAccess? = try? certificateExtension.authorityInformationAccess
-        let basicConstraintsInfo = CertificateUtils.parseSubject(subject: basicConstraints?.description ?? "")
+        certificateExtension = certificate.extensions
         
         for extensionInfo in certificate.extensions {
             var info: CertificateExtensionStruct
             let oidString = "\(extensionInfo.oid)"
             
             if let name = oidStrings[oidString] {
-                let value: String
-
-                
-                switch oidString {
-                case "2.5.29.14":
-                    value = "\(subjectKeyId?.description ?? "")".uppercased()
-                case "2.5.29.15":
-                    value = "Used: \(CertificateUtils.formatKeyUsage(keyUsageBasic ?? KeyUsage()))"
-                case "2.5.29.17":
-                    value = "\(subjectAlternativeNames?.description ?? "")"
-                case "2.5.29.19":
-                    value = "\(CertificateUtils.formatBoolean(from: basicConstraintsInfo["CA"] ?? ""))"
-                case "2.5.29.35":
-                    value = "\(authorityKeyId?.description.replacingOccurrences(of: "keyID: ", with: "") ?? "")"
-                    print(value)
-                case "2.5.29.37":
-                    value = "\(CertificateUtils.formatExtendedKeyUsage(keyUsageExtended?.description ?? ""))"
-                case "1.3.6.1.5.5.7.1.1":
-                    value = "\(certificateAuthority?.description ?? "")"
-                case "1.3.6.1.4.1.11129.2.4.2":
-                    value = LocalizationSystem.error //Проблемы с кодировкой текста
-                    print(value)
-                default:
-                    value = String(bytes: extensionInfo.value, encoding: .ascii) ?? ""
-                }
+                let dataValue = Data(extensionInfo.value)
+                let value: String = decodeExtensionValue(oid: oidString, value: dataValue)
                 
                 info = CertificateExtensionStruct(oid: oidString, critical: extensionInfo.critical, value: value)
             } else {

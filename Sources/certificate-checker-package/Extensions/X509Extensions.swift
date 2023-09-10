@@ -10,14 +10,9 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Foundation
 import SwiftASN1
 import X509
-
-extension Certificate {
-    func hasExtension(oid: ASN1ObjectIdentifier) -> Bool {
-        self.extensions[oid: oid] != nil
-    }
-}
 
 extension ASN1ObjectIdentifier.NameAttributes {
     static let userID: ASN1ObjectIdentifier = [0, 9, 2342, 19_200_300, 100, 1, 1]
@@ -97,5 +92,28 @@ extension Certificate.Version {
         default:
             return "unknown"
         }
+    }
+}
+
+// Преобразовываем данные в hex
+extension Data {
+    var hexEncodedString: String {
+        return map { String(format: "%02hhx", $0) }.joined()
+    }
+}
+
+extension String {
+    //Ищем все URL-адреса в строке
+    func extractURLs() -> [URL] {
+        var urls: [URL] = []
+        let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+        let matches = detector?.matches(in: self, options: [], range: NSRange(location: 0, length: self.utf16.count))
+        
+        for match in matches! {
+            if let matchURL = match.url {
+                urls.append(matchURL)
+            }
+        }
+        return urls
     }
 }

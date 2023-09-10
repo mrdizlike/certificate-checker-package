@@ -87,4 +87,6 @@ public struct LocalizationSystem {
     public static var externalKeyUsage = "External KeyUsage"
     public static var authorityAccess = "Authority Access"
     public static var OID = "OID"
+    public static var unknownOID = "Unknown OID"
+    public static var appleDeveloperCertificate = "Certificate Apple Developer"
 }
