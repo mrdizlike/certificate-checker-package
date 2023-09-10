@@ -53,14 +53,14 @@ class CertificateExtensionsReader {
             if let firstURL = urls.first {
                 return firstURL.absoluteString
             }
-            return decodedString
+            return String(data: value, encoding: .utf8) ?? hexString
         case "2.5.29.32":
             let decodedString = String(data: value, encoding: .ascii) ?? hexString
             let urls = decodedString.extractURLs()
             if let firstURL = urls.first {
                 return firstURL.absoluteString
             }
-            return decodedString
+            return String(data: value, encoding: .utf8) ?? hexString
         case "2.5.29.35":
             return authorityKeyId?.description.replacingOccurrences(of: "keyID: ", with: "") ?? ""
         case "2.5.29.37":
