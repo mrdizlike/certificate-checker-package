@@ -89,4 +89,5 @@ public struct LocalizationSystem {
     public static var OID = "OID"
     public static var unknownOID = "Unknown OID"
     public static var appleDeveloperCertificate = "Certificate Apple Developer"
+    public static var certificateDetails = "Certificate Details"
 }

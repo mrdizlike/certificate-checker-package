@@ -166,7 +166,7 @@ class CertificateParser: NSObject, URLSessionDelegate {
             self.checkNavigationAndPush(viewController: availableCertificatesVC)
             
             if self.viewController.title == nil{
-                self.viewController.title = "Certificate Details"
+                self.viewController.title = LocalizationSystem.certificateDetails
             }
             
             if availableCertificatesVC.title == nil {
