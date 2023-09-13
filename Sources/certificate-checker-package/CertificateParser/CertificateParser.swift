@@ -163,9 +163,16 @@ class CertificateParser: NSObject, URLSessionDelegate {
         DispatchQueue.main.async { // Работаем в основном потоке
             let availableCertificatesVC = ViewAvailableCertificates()
             availableCertificatesVC.certificates = self.certificatesInfo
-            self.viewController.addChild(availableCertificatesVC)
-            self.viewController.view.addSubview(availableCertificatesVC.view)
-            availableCertificatesVC.didMove(toParent: self.viewController)
+            self.checkNavigationAndPush(viewController: availableCertificatesVC)
+            
+            if self.viewController.title == nil{
+                self.viewController.title = "Certificate Details"
+            }
+            
+            if availableCertificatesVC.title == nil {
+                availableCertificatesVC.title = self.viewController.title
+            }
+            
             self.viewController.activityIndicator.stopAnimating() // Скрываем плашку загрузки
         }
     }
@@ -174,9 +181,16 @@ class CertificateParser: NSObject, URLSessionDelegate {
         DispatchQueue.main.async {
             let detailsVC = ViewCertificateDetails()
             detailsVC.certificate = self.certificatesInfo.first
-            self.viewController.addChild(detailsVC)
-            self.viewController.view.addSubview(detailsVC.view)
-            detailsVC.didMove(toParent: self.viewController)
+            self.checkNavigationAndPush(viewController: detailsVC)
+            
+            if self.viewController.title == nil {
+                self.viewController.title = self.certificatesInfo.first?.subjectCN
+            }
+            
+            if detailsVC.title == nil {
+                detailsVC.title = self.certificatesInfo.first?.subjectCN
+            }
+            
             self.viewController.activityIndicator.stopAnimating() // Скрываем плашку загрузки
         }
     }
@@ -186,6 +200,20 @@ class CertificateParser: NSObject, URLSessionDelegate {
             let alert = UIAlertController(title: LocalizationSystem.error, message: LocalizationSystem.errorDescription, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: LocalizationSystem.ok, style: .default, handler: nil))
             self.viewController.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    //Смотрим UINavigationController, если его нет, то создаем обертку
+    func checkNavigationAndPush(viewController: UIViewController) {
+        if self.viewController.navigationController == nil {
+            let navController = UINavigationController(rootViewController: viewController)
+            self.viewController.addChild(navController)
+            self.viewController.view.addSubview(navController.view)
+            navController.didMove(toParent: self.viewController)
+        } else {
+            self.viewController.addChild(viewController)
+            self.viewController.view.addSubview(viewController.view)
+            viewController.didMove(toParent: self.viewController)
         }
     }
     

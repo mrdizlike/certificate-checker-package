@@ -10,7 +10,6 @@ import UIKit
 
 class ViewAvailableCertificates: UIViewController, UITableViewDataSource, UITableViewDelegate, UIDocumentPickerDelegate {
     
-    
     var tableView: UITableView!
     var certificates: [CertificateInfo] = [] // Данные сертификатов
     var selectedCertificate: CertificateInfo?
@@ -44,11 +43,14 @@ class ViewAvailableCertificates: UIViewController, UITableViewDataSource, UITabl
             
         let detailsVC = ViewCertificateDetails()
         detailsVC.certificate = selectedCertificate
+        detailsVC.title = selectedCertificate.subjectCN
+        navigationController?.pushViewController(detailsVC, animated: true)
         
-        present(detailsVC, animated: true)
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     func setupViewController() {
+        self.navigationController?.navigationBar.backgroundColor = .white
         tableView = UITableView(frame: view.bounds, style: .grouped)
         tableView.delegate = self
         tableView.dataSource = self

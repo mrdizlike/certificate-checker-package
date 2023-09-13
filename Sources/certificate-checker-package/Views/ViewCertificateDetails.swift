@@ -67,11 +67,11 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
 
     
     func setupViewController() {
-        title = certificate?.subjectCN
+        self.navigationController?.navigationBar.backgroundColor = .white
         
         // Делаем по секции на каждое найденное расширение сертификата
         for extensionInfo in certificate!.certificateExtInfo {
-            let extensionSection = Section(title: (certificateExtensionReader.oidStrings[extensionInfo.oid] ?? "Unknown Extension ") + " (\(extensionInfo.oid))", rows: [
+            let extensionSection = Section(title: (certificateExtensionReader.oidStrings[extensionInfo.oid] ?? "Unknown Extension "), rows: [
                 Row(title: LocalizationSystem.value, value: extensionInfo.value),
                 Row(title: LocalizationSystem.critical, value: CertificateUtils.formatBoolean(from: extensionInfo.critical.description))
             ])
