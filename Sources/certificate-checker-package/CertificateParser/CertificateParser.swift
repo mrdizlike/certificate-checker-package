@@ -164,6 +164,7 @@ class CertificateParser: NSObject, URLSessionDelegate {
             let availableCertificatesVC = ViewAvailableCertificates()
             availableCertificatesVC.certificates = self.certificatesInfo
             self.checkNavigationAndPush(viewController: availableCertificatesVC)
+            availableCertificatesVC.prevNavigationBarStyle = self.viewController.navigationController?.navigationBar.scrollEdgeAppearance
             
             if self.viewController.title == nil{
                 self.viewController.title = LocalizationSystem.certificateDetails
@@ -182,6 +183,7 @@ class CertificateParser: NSObject, URLSessionDelegate {
             let detailsVC = ViewCertificateDetails()
             detailsVC.certificate = self.certificatesInfo.first
             self.checkNavigationAndPush(viewController: detailsVC)
+            detailsVC.prevNavigationBarStyle = self.viewController.navigationController?.navigationBar.scrollEdgeAppearance
             
             if self.viewController.title == nil {
                 self.viewController.title = self.certificatesInfo.first?.subjectCN

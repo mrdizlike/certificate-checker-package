@@ -27,11 +27,16 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
     var certificateExtensionReader: CertificateExtensionsReader = CertificateExtensionsReader()
     var sections: [Section] = []
     var extensionSections: [Section] = []
+    var prevNavigationBarStyle: UINavigationBarAppearance!
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setupViewController()
+    }
+    
+    public override func viewDidDisappear(_ animated: Bool) {
+        self.navigationController?.navigationBar.scrollEdgeAppearance = prevNavigationBarStyle
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -67,7 +72,10 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
 
     
     func setupViewController() {
-        self.navigationController?.navigationBar.backgroundColor = .white
+        let scrollEdgeAppeareance = UINavigationBarAppearance()
+        scrollEdgeAppeareance.configureWithDefaultBackground()
+        
+        self.navigationController?.navigationBar.scrollEdgeAppearance = scrollEdgeAppeareance
         
         // Делаем по секции на каждое найденное расширение сертификата
         for extensionInfo in certificate!.certificateExtInfo {

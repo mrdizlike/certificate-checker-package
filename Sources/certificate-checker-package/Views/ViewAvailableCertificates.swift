@@ -13,12 +13,17 @@ class ViewAvailableCertificates: UIViewController, UITableViewDataSource, UITabl
     var tableView: UITableView!
     var certificates: [CertificateInfo] = [] // Данные сертификатов
     var selectedCertificate: CertificateInfo?
+    var prevNavigationBarStyle: UINavigationBarAppearance!
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setupViewController()
 
+    }
+    
+    public override func viewDidDisappear(_ animated: Bool) {
+        self.navigationController?.navigationBar.scrollEdgeAppearance = prevNavigationBarStyle
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -50,7 +55,11 @@ class ViewAvailableCertificates: UIViewController, UITableViewDataSource, UITabl
     }
     
     func setupViewController() {
-        self.navigationController?.navigationBar.backgroundColor = .white
+        let scrollEdgeAppeareance = UINavigationBarAppearance()
+        scrollEdgeAppeareance.configureWithDefaultBackground()
+        
+        self.navigationController?.navigationBar.scrollEdgeAppearance = scrollEdgeAppeareance
+
         tableView = UITableView(frame: view.bounds, style: .grouped)
         tableView.delegate = self
         tableView.dataSource = self
