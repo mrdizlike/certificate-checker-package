@@ -31,7 +31,7 @@ class ViewAvailableCertificates: UIViewController, UITableViewDataSource, UITabl
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return "Certificates"
+        return LocalizationSystem.certificates
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -49,6 +49,7 @@ class ViewAvailableCertificates: UIViewController, UITableViewDataSource, UITabl
         let detailsVC = ViewCertificateDetails()
         detailsVC.certificate = selectedCertificate
         detailsVC.title = selectedCertificate.subjectCN
+        detailsVC.prevNavigationBarStyle = prevNavigationBarStyle
         navigationController?.pushViewController(detailsVC, animated: true)
         
         tableView.deselectRow(at: indexPath, animated: true)
