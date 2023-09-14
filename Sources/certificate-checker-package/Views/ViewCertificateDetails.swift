@@ -35,7 +35,9 @@ class ViewCertificateDetails: UIViewController, UITableViewDataSource, UITableVi
         setupViewController()
     }
     
-    public override func viewDidDisappear(_ animated: Bool) {
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        
         self.navigationController?.navigationBar.scrollEdgeAppearance = prevNavigationBarStyle
     }
     
